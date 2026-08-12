@@ -2,11 +2,13 @@
 
 bool create_cipher_key(unsigned char*  key) {
     int urandomFd = 0;
+    int bytesRead = 0;
 
     urandomFd = open("/dev/urandom", O_RDONLY);
     if (urandomFd == -1)
         return _perror("Unable to open urandom");
-    if (read(urandomFd, key, 16) == -1)
+    bytesRead = read(urandomFd, key, 16);
+    if (bytesRead == -1 || bytesRead != 16)
         return _perror("Unable to read urandom");
     if (close(urandomFd) == -1)
         return _perror("Unable to close urandomFd");
@@ -20,7 +22,7 @@ bool encrypt_text(unsigned char* text) {
     (void)text;
     if (!create_cipher_key(key))
         return false;
-    // _psuccess((char *)key);
+    _psuccess((char *)key);
     return true;
 }
 
