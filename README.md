@@ -33,3 +33,7 @@ Comme on l'a vu dans les recherches précédentes, RC4 (ou des variantes maison 
 RC4 accepte des clés de longueur variable (de 1 à 256 octets) sans changer l'algorithme lui-même — contrairement à AES où la taille de clé (128/192/256 bits) change la structure interne (nombre de rounds, etc.). Ça te donne une liberté simple si tu veux expérimenter avec différentes longueurs de clé.
 
 En résumé : au-delà d'être facile à coder, RC4 t'évite les problèmes de padding/alignement liés aux chiffrements par bloc, reste très performant, et correspond à un choix réaliste par rapport aux pratiques du monde du malware.
+
+### ressources
+- [RC4 Encryption Deep Dive: Architecture, Attacks, Cryptanalysis, and Secure Alternatives ](https://www.qcecuring.com/blog/what-is-rc4)
+- Why using /dev/urandom isn't a bad choice to get a random key : [Myths about /dev/urandom](https://www.thomas-huehn.com/myths-about-urandom/)
