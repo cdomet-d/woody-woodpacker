@@ -1,5 +1,6 @@
 NAME := woody_woodpacker
 BUILD_DIR := .dir_build/
+SDIR:= src/
 HEADERS := includes/
 
 CC := gcc
@@ -22,7 +23,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 	
-$(BUILD_DIR)%.o: %.c
+$(BUILD_DIR)%.o: $(SDIR)%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
