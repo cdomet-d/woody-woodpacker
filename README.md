@@ -37,3 +37,4 @@ En résumé : au-delà d'être facile à coder, RC4 t'évite les problèmes de p
 ### ressources
 - [RC4 Encryption Deep Dive: Architecture, Attacks, Cryptanalysis, and Secure Alternatives ](https://www.qcecuring.com/blog/what-is-rc4)
 - Why using /dev/urandom isn't a bad choice to get a random key : [Myths about /dev/urandom](https://www.thomas-huehn.com/myths-about-urandom/)
+- [RC4 Wiki](https://en.wikipedia.org/wiki/RC4)
