@@ -19,6 +19,3 @@ bool is_valid_machine(const int e_machine)
 }
 
 
-// unsigned char *extract_binary_text(const int e_machine)
-// {
-// }

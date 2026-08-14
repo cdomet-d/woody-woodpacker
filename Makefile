@@ -44,9 +44,8 @@ fclean: clean
 re: fclean all
 
 run: all
-	@./$(NAME) utils/sample
+	@./$(NAME) utils/64sample
 
-
-# FORCE : 
+FORCE : 
 
 .PHONY : clean fclean all re FORCE

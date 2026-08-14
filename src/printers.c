@@ -1,7 +1,7 @@
 #include "woody.h"
 #include "libft.h"
 
-void pehdr(Elf64_Ehdr *upckbin)
+void print_ehdr(Elf64_Ehdr *upckbin)
 {
 	printf("--- ELF Header ---\n");
 
@@ -26,9 +26,6 @@ void pehdr(Elf64_Ehdr *upckbin)
 	default:
 		break;
 	}
-	//   class=%d  data=%d  version=%d  osabi=%d
-	// 	   upckbin->e_ident[EI_CLASS], upckbin->e_ident[EI_DATA],
-	// 	   upckbin->e_ident[EI_VERSION], upckbin->e_ident[EI_OSABI]);
 
 	switch (upckbin->e_type)
 	{
@@ -64,9 +61,6 @@ void pehdr(Elf64_Ehdr *upckbin)
 	// e_shoff: file offset (in bytes) where the section header table starts
 	printf("e_shoff      : %ld (section header table file offset)\n", upckbin->e_shoff);
 
-	// e_flags: processor-specific flags, usually 0 on x86_64
-	printf("e_flags      : %d (processor-specific flags)\n", upckbin->e_flags);
-
 	// e_ehsize: size in bytes of this ELF header itself
 	printf("e_ehsize     : %d (ELF header size in bytes)\n", upckbin->e_ehsize);
 
@@ -101,4 +95,58 @@ void print_ascii(char *str)
 	}
 
 	printf("\n");
+}
+
+void print_bin_context(s_bin_ctx ctx)
+{
+	printf("%s%-25s%s	%ld\n", INFO, "ctx.original_entrypoint", RESET, ctx.original_entrypoint);
+	printf("%s%-25s%s	%d\n", INFO, "ctx.program_hdr_count", RESET, ctx.program_hdr_count);
+	printf("%s%-25s%s	%ld\n", INFO, "ctx.program_hdr_offset", RESET, ctx.program_hdr_offset);
+	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_offset", RESET, ctx.text_offset);
+	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_size", RESET, ctx.text_size);
+	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_vaddress", RESET, ctx.text_vaddress);
+}
+
+#include <stdio.h>
+#include <elf.h>
+
+// Turn p_type's numeric value into a readable name
+static const char *phdr_type_str(Elf64_Word type)
+{
+	switch (type)
+	{
+	case PT_NULL:
+		return "PT_NULL";
+	case PT_LOAD:
+		return "PT_LOAD";
+	case PT_DYNAMIC:
+		return "PT_DYNAMIC";
+	case PT_INTERP:
+		return "PT_INTERP";
+	case PT_NOTE:
+		return "PT_NOTE";
+	case PT_SHLIB:
+		return "PT_SHLIB";
+	case PT_PHDR:
+		return "PT_PHDR";
+	case PT_TLS:
+		return "PT_TLS";
+	case PT_GNU_EH_FRAME:
+		return "PT_GNU_EH_FRAME";
+	case PT_GNU_STACK:
+		return "PT_GNU_STACK";
+	case PT_GNU_RELRO:
+		return "PT_GNU_RELRO";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+void print_phdr(Elf64_Phdr phdr, int i)
+{
+	printf("Header [%02d]	R %-5s | W %-5s | E %-5s | Type %-15s\n", i,
+		   phdr.p_flags & PF_R ? "true" : "false",
+		   phdr.p_flags & PF_W ? "true" : "false",
+		   phdr.p_flags & PF_X ? "true" : "false",
+		   phdr_type_str(phdr.p_type));
 }
