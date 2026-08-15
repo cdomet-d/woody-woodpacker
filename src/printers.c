@@ -141,4 +141,3 @@ void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset)
 	}
 	printf("\n");
 }
-Bonjouuuuuuurrrrr Coralie !
