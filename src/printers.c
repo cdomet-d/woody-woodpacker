@@ -1,84 +1,43 @@
 #include "woody.h"
 #include "libft.h"
 
+char *get_file_type(Elf64_Half type)
+{
+	switch (type)
+	{
+	case 1:
+		return "REL (Relocatable file)";
+	case 2:
+		return "EXEC (Executable file)";
+	case 3:
+		return "DYN (Position-Independent Executable file)";
+	case 4:
+		return "CORE (Core Dump)";
+	default:
+		return "unindentifiable";
+	}
+}
+
+char *get_file_class(unsigned char ident[EI_NIDENT])
+{
+	switch (ident[EI_CLASS])
+	{
+	case 1:
+		return "32-bit";
+	case 2:
+		return "64-bit";
+	default:
+		return "invalid";
+	}
+}
 void print_ehdr(Elf64_Ehdr *upckbin)
 {
-	printf("--- ELF Header ---\n");
+	printf("\n%s--- ELF Header ---%s\n", INFO, RESET);
 
-	// e_ident: 16-byte array, not a single value. Bytes 0-3 are the magic
-	// number (0x7F 'E' 'L' 'F'), byte 4 = class (32/64-bit), byte 5 = data
-	// encoding (endianness), byte 6 = ELF version, byte 7 = OS/ABI, rest padding.
-	printf("e_ident      : %c%c%c%c (magic)\n",
-		   upckbin->e_ident[EI_MAG0], upckbin->e_ident[EI_MAG1],
-		   upckbin->e_ident[EI_MAG2], upckbin->e_ident[EI_MAG3]);
-
-	switch (upckbin->e_ident[EI_CLASS])
-	{
-	case 0:
-		printf("e_type       : Invalid class\n");
-		break;
-	case 1:
-		printf("e_type       : 32-bit objects\n");
-		break;
-	case 2:
-		printf("e_type       : 64-bit objects\n");
-		break;
-	default:
-		break;
-	}
-
-	switch (upckbin->e_type)
-	{
-	case 1:
-		printf("e_type       : %d (object file type: relocatable)\n", upckbin->e_type);
-		break;
-	case 2:
-		printf("e_type       : %d (object file type: non-PIE executable)\n", upckbin->e_type);
-		break;
-	case 3:
-		printf("e_type       : %d (object file type: shared object/PIE executable)\n", upckbin->e_type);
-		break;
-	case 4:
-		printf("e_type       : %d (object file type: core dump)\n", upckbin->e_type);
-		break;
-	default:
-		_perror("Could not identify file type");
-		break;
-	}
-
-	// e_machine: target instruction set architecture (EM_X86_64 = 62)
-	printf("e_machine    : %d (target architecture, 62 = x86_64)\n", upckbin->e_machine);
-
-	// e_version: ELF format version, currently always 1 (EV_CURRENT)
-	printf("e_version    : %d (ELF format version, always 1)\n", upckbin->e_version);
-
-	// e_entry: virtual address the kernel jumps to when the process starts
-	printf("e_entry      : 0x%lx (entry point virtual address)\n", upckbin->e_entry);
-
-	// e_phoff: file offset (in bytes) where the program header table starts
-	printf("e_phoff      : %ld (program header table file offset)\n", upckbin->e_phoff);
-
-	// e_shoff: file offset (in bytes) where the section header table starts
-	printf("e_shoff      : %ld (section header table file offset)\n", upckbin->e_shoff);
-
-	// e_ehsize: size in bytes of this ELF header itself
-	printf("e_ehsize     : %d (ELF header size in bytes)\n", upckbin->e_ehsize);
-
-	// e_phentsize: size in bytes of ONE entry in the program header table
-	printf("e_phentsize  : %d (size of one program header entry)\n", upckbin->e_phentsize);
-
-	// e_phnum: number of entries in the program header table
-	printf("e_phnum      : %d (number of program header entries)\n", upckbin->e_phnum);
-
-	// e_shentsize: size in bytes of ONE entry in the section header table
-	printf("e_shentsize  : %d (size of one section header entry)\n", upckbin->e_shentsize);
-
-	// e_shnum: number of entries in the section header table
-	printf("e_shnum      : %d (number of section header entries)\n", upckbin->e_shnum);
-
-	// e_shstrndx: index into the section header table of the section
-	// that holds section NAME strings (the ".shstrtab" section)
-	printf("e_shstrndx   : %d (index of section name string table)\n", upckbin->e_shstrndx);
+	printf("Elf file type is %-45s\n", get_file_type(upckbin->e_type));
+	printf("Elf file class is %s\n", get_file_class(upckbin->e_ident));
+	printf("Entry point 0x%lx\n", upckbin->e_entry);
+	printf("There are %u program headers, starting at offset %lu\n", upckbin->e_phnum, upckbin->e_phoff);
 }
 
 void print_ascii(char *str)
@@ -99,12 +58,14 @@ void print_ascii(char *str)
 
 void print_bin_context(s_bin_ctx ctx)
 {
-	printf("%s%-25s%s	%ld\n", INFO, "ctx.original_entrypoint", RESET, ctx.original_entrypoint);
+	printf("\n%s--- Printing ELF Header Info ---\n%s", INFO, RESET);
+	printf("%s%-25s%s	0x%lX\n", INFO, "ctx.original_entrypoint", RESET, ctx.original_entrypoint);
 	printf("%s%-25s%s	%d\n", INFO, "ctx.program_hdr_count", RESET, ctx.program_hdr_count);
-	printf("%s%-25s%s	%ld\n", INFO, "ctx.program_hdr_offset", RESET, ctx.program_hdr_offset);
+	printf("%s%-25s%s	%16ld\n", INFO, "ctx.program_hdr_offset", RESET, ctx.program_hdr_offset);
 	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_offset", RESET, ctx.text_offset);
 	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_size", RESET, ctx.text_size);
 	printf("%s%-25s%s	%ld\n", INFO, "ctx.text_vaddress", RESET, ctx.text_vaddress);
+	printf("\n");
 }
 
 #include <stdio.h>
@@ -144,9 +105,40 @@ static const char *phdr_type_str(Elf64_Word type)
 
 void print_phdr(Elf64_Phdr phdr, int i)
 {
-	printf("Header [%02d]	R %-5s | W %-5s | E %-5s | Type %-15s\n", i,
-		   phdr.p_flags & PF_R ? "true" : "false",
-		   phdr.p_flags & PF_W ? "true" : "false",
-		   phdr.p_flags & PF_X ? "true" : "false",
-		   phdr_type_str(phdr.p_type));
+	char flags[4];
+
+	flags[0] = phdr.p_flags & PF_R ? 'R' : ' ';
+	flags[1] = phdr.p_flags & PF_W ? 'W' : ' ';
+	flags[2] = phdr.p_flags & PF_X ? 'X' : ' ';
+	flags[4] = 0;
+
+	printf("Header [%02d]	%-3s	%-15s\n", i, flags, phdr_type_str(phdr.p_type));
 }
+
+void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset)
+{
+	char ascii[17] = {0};
+
+	printf("\n%s--- Printing executable text segment of size %u at offset %ld---%s\n ", INFO, size, offset, RESET);
+	printf("\n");
+
+	for (Elf64_Xword i = 0; i < size; i++)
+	{
+		if ((i) % 16 == 0)
+			printf("%08lX: ", offset + i);
+		printf("%02x ", txt[i]);
+		ascii[i % 16] = txt[i] >= ' '&&  txt[i] < 127 ?  txt[i] : '.';
+		if (i == (size - 1) && (i + 1) % 16 != 0)
+			while ((i + 1) % 16 != 0)
+			{
+				printf("   ");
+				i++;
+			}
+		if ((i + 1) % 16 == 0) {
+			printf("	%s\n", ascii);
+			ft_memset(ascii, 0, 17);
+		}
+	}
+	printf("\n");
+}
+Bonjouuuuuuurrrrr Coralie !

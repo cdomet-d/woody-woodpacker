@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define GREEN "\033[48;2;124;204;87m"
-#define INFO "\033[48;2;228;208;10m"
+#define INFO "\033[48;2;204;204;255m"
 #define RED "\033[48;2;205;41;73m"
 #define RESET "\033[0m"
 
@@ -63,6 +63,7 @@ void print_ascii(char *str);
 void print_bin_context(s_bin_ctx ctx);
 void print_ehdr(Elf64_Ehdr *upckbin);
 void print_phdr(Elf64_Phdr phdr, int i);
+void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset);
 
 // parsing
 bool is_valid_magic(const unsigned char *ident);

@@ -15,7 +15,7 @@ bool get_xphdr(Elf64_Phdr *phdr, s_bin_ctx *ctx)
 	int ephdr_count = 0;
 	Elf64_Phdr xphdr = {0};
 	
-	printf("--- Program Headers (%d entries) ---\n", ctx->program_hdr_count);
+	printf("\n%s--- Program Headers (%d entries) ---%s\n", INFO, ctx->program_hdr_count, RESET);
 	for (int i = 0; i < ctx->program_hdr_count; i++)
 	{
 		print_phdr(phdr[i], i);
@@ -44,14 +44,11 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx)
 {
 	if (!is_valid_magic(ehdr->e_ident))
 		return _perror("File format not supported");
-	_plog("File format is ELF");
 	if (!is_valid_format(ehdr->e_ident[EI_CLASS]))
 		return _perror("File architecture not supported");
-	_plog("File architecture is 64-bit");
 	if (!is_valid_machine(ehdr->e_machine))
 		return _perror("Machine architecture not supported");
-	_plog("Machine is AMD x86-64");
-
+	print_ehdr(ehdr);
 	ctx->original_entrypoint = ehdr->e_entry;
 	ctx->program_hdr_count = ehdr->e_phnum;
 	ctx->program_hdr_offset = ehdr->e_phoff;
@@ -78,7 +75,6 @@ int main(int argc, char *argv[])
 	s_bin_ctx ctx = {0};
 	if (!validate_format(ehdr, &ctx))
 		return false;
-	print_bin_context(ctx);
 
 	// We use the program offset from ehdr to find the adress of the first program header
 	if (!get_xphdr((Elf64_Phdr *)(file_map + ctx.program_hdr_offset), &ctx))
@@ -87,6 +83,6 @@ int main(int argc, char *argv[])
 	if (!ctx.text_data)
 		return _perror(strerror(errno));
 	ctx.text_data = ft_memcpy(ctx.text_data, (file_map + ctx.text_offset), ctx.text_size);
-	print_ascii((char *)ctx.text_data);
+	print_text_data(ctx.text_data, ctx.text_size, ctx.text_offset);
 	return 0;
 }
