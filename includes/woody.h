@@ -8,6 +8,7 @@
 #define INFO "\033[48;2;204;204;255m"
 #define RED "\033[48;2;205;41;73m"
 #define RESET "\033[0m"
+#define STUB_SIZE 20 // UPDATE STUB_SIZE HERE AS IT CHANGES
 
 /*
  a simple struct to store our binary informations across the project
