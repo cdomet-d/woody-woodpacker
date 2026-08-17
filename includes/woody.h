@@ -3,6 +3,9 @@
 #include <errno.h>
 #include <elf.h>
 #include <stdbool.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "libft.h"
 
 #define GREEN "\033[48;2;124;204;87m"
 #define INFO "\033[48;2;204;204;255m"
