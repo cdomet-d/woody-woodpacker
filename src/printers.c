@@ -126,7 +126,8 @@ void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset)
 	{
 		if ((i) % 16 == 0)
 			printf("%08lX: ", offset + i);
-		printf("%02x ", txt[i]);
+		printf("%02x", txt[i]);
+		if (i % 2 == 0) printf(" ");
 		ascii[i % 16] = txt[i] >= ' '&&  txt[i] < 127 ?  txt[i] : '.';
 		if (i == (size - 1) && (i + 1) % 16 != 0)
 			while ((i + 1) % 16 != 0)
