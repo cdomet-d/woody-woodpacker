@@ -82,5 +82,6 @@ int main(int argc, char *argv[])
 	ctx.text_data = ft_memcpy(ctx.text_data, (file_map + ctx.text_offset), ctx.text_size);
 	print_text_data(ctx.text_data, ctx.text_size, ctx.text_offset);
 	encrypt_text(ctx.text_data);
+	free(ctx.text_data);
 	return 0;
 }
