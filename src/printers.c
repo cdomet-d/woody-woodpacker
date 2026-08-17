@@ -142,3 +142,12 @@ void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset)
 	}
 	printf("\n");
 }
+
+void print_S(unsigned char*  S) {
+	int i = 0;
+
+	while (i < 256) {
+		printf("%d: %d | ", i, S[i]);
+		i++;
+	}
+}
