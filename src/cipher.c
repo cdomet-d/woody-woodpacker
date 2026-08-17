@@ -31,10 +31,12 @@ void init_array_S(unsigned char*  S) {
 }
 
 bool encrypt_text(unsigned char* text) {
-	unsigned char  key[16];//TODO: ft_bzero
-	unsigned char  S[256];//TODO: ft_bzero
+	unsigned char  key[16];
+	unsigned char  S[256];
 
 	(void)text;
+	ft_bzero(key, 16);
+	ft_bzero(S, 256);
 	if (!create_cipher_key(key))
 		return false;
 	// _psuccess((char *)key);
