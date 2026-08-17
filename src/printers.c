@@ -76,41 +76,40 @@ static const char *phdr_type_str(Elf64_Word type)
 {
 	switch (type)
 	{
-	case PT_NULL:
-		return "PT_NULL";
-	case PT_LOAD:
-		return "PT_LOAD";
-	case PT_DYNAMIC:
-		return "PT_DYNAMIC";
-	case PT_INTERP:
-		return "PT_INTERP";
-	case PT_NOTE:
-		return "PT_NOTE";
-	case PT_SHLIB:
-		return "PT_SHLIB";
-	case PT_PHDR:
-		return "PT_PHDR";
-	case PT_TLS:
-		return "PT_TLS";
-	case PT_GNU_EH_FRAME:
-		return "PT_GNU_EH_FRAME";
-	case PT_GNU_STACK:
-		return "PT_GNU_STACK";
-	case PT_GNU_RELRO:
-		return "PT_GNU_RELRO";
-	default:
-		return "UNKNOWN";
+		case PT_NULL:
+			return "PT_NULL";
+		case PT_LOAD:
+			return "PT_LOAD";
+		case PT_DYNAMIC:
+			return "PT_DYNAMIC";
+		case PT_INTERP:
+			return "PT_INTERP";
+		case PT_NOTE:
+			return "PT_NOTE";
+		case PT_SHLIB:
+			return "PT_SHLIB";
+		case PT_PHDR:
+			return "PT_PHDR";
+		case PT_TLS:
+			return "PT_TLS";
+		case PT_GNU_EH_FRAME:
+			return "PT_GNU_EH_FRAME";
+		case PT_GNU_STACK:
+			return "PT_GNU_STACK";
+		case PT_GNU_RELRO:
+			return "PT_GNU_RELRO";
+		default:
+			return "UNKNOWN";
 	}
 }
 
 void print_phdr(Elf64_Phdr phdr, int i)
 {
-	char flags[4];
+	char flags[4] = {0};
 
 	flags[0] = phdr.p_flags & PF_R ? 'R' : ' ';
 	flags[1] = phdr.p_flags & PF_W ? 'W' : ' ';
 	flags[2] = phdr.p_flags & PF_X ? 'X' : ' ';
-	flags[4] = 0;
 
 	printf("Header [%02d]	%-3s	%-15s\n", i, flags, phdr_type_str(phdr.p_type));
 }
