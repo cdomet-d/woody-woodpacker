@@ -76,4 +76,4 @@ bool is_valid_format(const int ei_class);
 bool is_valid_machine(const int e_machine);
 
 // cipher
-bool encrypt_text(unsigned char* text);
+unsigned char* encrypt_text(unsigned char* text, int text_size, unsigned char* cipherText);
