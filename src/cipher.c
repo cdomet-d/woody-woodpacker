@@ -1,5 +1,5 @@
 #include "woody.h"
-
+int nb =0 ;
 /*
 	create_cipher_key generates a random key of 16 bytes by reading /dev/urandom
 */
@@ -7,6 +7,7 @@ bool create_cipher_key(unsigned char*  key) {
 	int urandomFd = 0;
 	int bytesRead = 0;
 
+	printf("IN CIPHER\n");
 	urandomFd = open("/dev/urandom", O_RDONLY);
 	if (urandomFd == -1)
 		return _perror("Unable to open urandom");
@@ -54,36 +55,40 @@ void ksa(unsigned char*  S, unsigned char*  key) {
 /*
 	Pseudo-random generation algorithm
 */
-void prga(unsigned char*  S, unsigned char* text) {
-	(void)S;
-	(void)text;
-	/*
-	i := 0
-	j := 0
-	while GeneratingOutput:
-		i := (i + 1) mod 256
-		j := (j + S[i]) mod 256
-		swap values of S[i] and S[j]
-		t := (S[i] + S[j]) mod 256
-		K := S[t]
-		output K
-	endwhile
-	*/
+bool prga(unsigned char* cipherText, unsigned char*  S, unsigned char* text, int text_size) {
+	int i = 0;
+	int j = 0;
+	int t = 0;
+	int idx = 0;
+	while (idx < text_size) {
+		i = (i + 1) % 256;
+		j = (j + S[i]) % 256;
+		swap_S_values(S, i, j);
+		t = (S[i] + S[j]) % 256;
+		cipherText[idx] = S[t] ^ text[idx];
+		idx++;
+	}
+	return true;
 }
 
-bool encrypt_text(unsigned char* text) {
+unsigned char* encrypt_text(unsigned char* text, int text_size, unsigned char* cipherText) {
 	unsigned char  key[16];
 	unsigned char  S[256];
 
 	ft_bzero(key, 16);
 	ft_bzero(S, 256);
-	if (!create_cipher_key(key))
-		return false;
-	// _psuccess((char *)key);
+	if (nb == 0)
+		if (!create_cipher_key(key))
+			return NULL;
+	nb++;
+	// printf("key: ");
+	// for (int i = 0; i < 16; i++)
+	// 	printf("%d ", key[i]);
 	ksa(S, key);
-	print_S(S);
-	prga(S, text);
-	return true;
+	// print_S(S);
+	if (!prga(cipherText, S, text, text_size))
+		return NULL;
+	return cipherText;
 }
 
 /*
