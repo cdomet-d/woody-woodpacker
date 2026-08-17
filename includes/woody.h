@@ -70,3 +70,9 @@ void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset);
 bool is_valid_magic(const unsigned char *ident);
 bool is_valid_format(const int ei_class);
 bool is_valid_machine(const int e_machine);
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx);
+
+// header recovery 
+bool get_xphdr(Elf64_Phdr *phdr, s_bin_ctx *ctx);
+
+// header modification

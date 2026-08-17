@@ -8,9 +8,9 @@ lea rsi, [rel msg] ; "loads" the adress of the label "msg" declared later
 mov rdx, msg_len
 syscall
 
-mov rax, 60 ; exit
-mov rdi, 0
-syscall
+mov rax, [ rel original_entrypoint] 
+jmp rax
 
-msg: db "....WOODY....", 10
+msg: dq "....WOODY....", 10
 msg_len : equ $ - msg 
+original_entrypoint: db 0
