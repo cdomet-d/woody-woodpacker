@@ -3,6 +3,9 @@
 #include <errno.h>
 #include <elf.h>
 #include <stdbool.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "libft.h"
 
 #define GREEN "\033[48;2;124;204;87m"
 #define INFO "\033[48;2;204;204;255m"
@@ -96,3 +99,7 @@ bool get_xphdr(const Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *
 
 // header modification
 bool realloc_headers(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx);
+
+// cipher
+unsigned char* encrypt_text(unsigned char*  key, unsigned char* text, int text_size);
+bool create_cipher_key(unsigned char*  key);

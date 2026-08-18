@@ -1,10 +1,7 @@
 #include "woody.h"
-#include "libft.h"
 #include <elf.h>
-#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <stdlib.h>
 
 /* Finds and stores the executable header of the binary, which contains .text
@@ -52,8 +49,23 @@ int main(int argc, char *argv[])
 	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), ctx.xphdr.txt_size);
 
 	print_xphdr(&ctx.xphdr);
+	
+	// key creation
+	unsigned char  key[16];
+	ft_bzero(key, 16);
+	if (!create_cipher_key(key))
+		return 1;
+	
+	// text encryption
+	unsigned char* cipherText = NULL;
+	cipherText = encrypt_text(key, ctx.text_data, ctx.text_size);
+	if (!cipherText)
+		return 1;
+
 	realloc_headers(ehdr, &ctx);
 	free(ctx.xphdr.txt_data);
 	close(bin_fd);
+	free(cipherText);
 	return 0;
 }
+
