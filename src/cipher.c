@@ -1,5 +1,4 @@
 #include "woody.h"
-int nb =0 ;
 /*
 	create_cipher_key generates a random key of 16 bytes by reading /dev/urandom
 */
@@ -60,32 +59,27 @@ bool prga(unsigned char* cipherText, unsigned char*  S, unsigned char* text, int
 	int j = 0;
 	int t = 0;
 	int idx = 0;
+
 	while (idx < text_size) {
 		i = (i + 1) % 256;
 		j = (j + S[i]) % 256;
 		swap_S_values(S, i, j);
 		t = (S[i] + S[j]) % 256;
-		cipherText[idx] = S[t] ^ text[idx];
+		cipherText[idx] = S[t] ^ text[idx]; //XOR
 		idx++;
 	}
 	return true;
 }
 
-unsigned char* encrypt_text(unsigned char* text, int text_size, unsigned char* cipherText) {
-	unsigned char  key[16];
+unsigned char* encrypt_text(unsigned char* key, unsigned char* text, int text_size) {
+	unsigned char* cipherText = NULL;
 	unsigned char  S[256];
 
-	ft_bzero(key, 16);
+	cipherText = ft_calloc(sizeof(unsigned char), text_size);
+	if (cipherText == NULL)
+		return (_perror("cipherText malloc failed"), NULL);
 	ft_bzero(S, 256);
-	if (nb == 0)
-		if (!create_cipher_key(key))
-			return NULL;
-	nb++;
-	// printf("key: ");
-	// for (int i = 0; i < 16; i++)
-	// 	printf("%d ", key[i]);
 	ksa(S, key);
-	// print_S(S);
 	if (!prga(cipherText, S, text, text_size))
 		return NULL;
 	return cipherText;

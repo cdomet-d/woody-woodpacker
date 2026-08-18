@@ -52,13 +52,6 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx)
 	return true;
 }
 
-void print_text(unsigned char* text, char* msg, int size) {
-	printf("\n%s\n", msg);
-	for (int x = 0; x < size; x++)
-		printf("%d ", text[x]);
-	printf("\n");
-}
-
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -89,23 +82,19 @@ int main(int argc, char *argv[])
 	ctx.text_data = ft_memcpy(ctx.text_data, (file_map + ctx.text_offset), ctx.text_size);
 	print_text_data(ctx.text_data, ctx.text_size, ctx.text_offset);
 	
-	//
-	unsigned char* cipherText = NULL;
-	cipherText = ft_calloc(sizeof(unsigned char), text_size);
-	if (cipherText == NULL)
-		return (_perror("cipherText malloc failed"), NULL);
-
-	print_text(ctx.text_data, "text before cipher", (int)ctx.text_size);
+	// key creation
+	unsigned char  key[16];
+	ft_bzero(key, 16);
+	if (!create_cipher_key(key))
+		return 1;
 	
-	encrypt_text(ctx.text_data, ctx.text_size, cipherText);
-	print_text(cipherText, "text after encrypt", (int)ctx.text_size);
-
-	encrypt_text(cipherText, ctx.text_size, cipherText);
-	print_text(cipherText, "text after decrypt", (int)ctx.text_size);
+	// text encryption
+	unsigned char* cipherText = NULL;
+	cipherText = encrypt_text(key, ctx.text_data, ctx.text_size);
+	if (!cipherText)
+		return 1;
 
 	free(cipherText);
-	//
-
 	free(ctx.text_data);
 	return 0;
 }
