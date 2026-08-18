@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	
 	// text encryption
 	unsigned char* cipherText = NULL;
-	cipherText = encrypt_text(key, ctx.text_data, ctx.text_size);
+	cipherText = encrypt_text(key, ctx.xphdr.txt_data, ctx.xphdr.txt_size);
 	if (!cipherText)
 		return 1;
 
