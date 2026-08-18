@@ -13,7 +13,8 @@ MAKEFLAGS += --no-print-directory
 SRC +=	main.c \
 		logging.c \
 		printers.c \
-		binary_validation.c
+		binary_validation.c \
+		cipher.c
 
 OBJS:= $(addprefix $(BUILD_DIR),$(SRC:%.c=%.o))
 DEPS:= $(OBJS:%.o=%.d)

@@ -3,6 +3,9 @@
 #include <errno.h>
 #include <elf.h>
 #include <stdbool.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "libft.h"
 
 #define GREEN "\033[48;2;124;204;87m"
 #define INFO "\033[48;2;204;204;255m"
@@ -70,3 +73,7 @@ void print_text_data(unsigned char *txt, Elf64_Word size, Elf64_Off offset);
 bool is_valid_magic(const unsigned char *ident);
 bool is_valid_format(const int ei_class);
 bool is_valid_machine(const int e_machine);
+
+// cipher
+unsigned char* encrypt_text(unsigned char*  key, unsigned char* text, int text_size);
+bool create_cipher_key(unsigned char*  key);
