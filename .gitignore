@@ -1,4 +1,4 @@
 .dir_build
 woody_woodpacker
-libft.a
+libft/libft.a
 libft/.lib_build
