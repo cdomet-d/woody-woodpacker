@@ -1,3 +1,17 @@
+<style>
+.column {
+  float: left;
+  width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+ </style>
+
 # woody-woodpacker
 
 This project is about coding a simple packer
@@ -12,20 +26,37 @@ This project is about coding a simple packer
 
 ## How to
 
-- [X] Unpack binary into memory using nmap 
+- [X] Unpack binary into memory using nmap
 - [X] Parse Elf Headers to recover Program Headers and executable segment
 - [X] Yoink `.text` and check integrity
-- [ ] Write simple stub in ASM and get its size 
+- [ ] Write simple stub in ASM and get its size
 - [ ] Allocate (nmap result + stub_size) so we can start creating `woody`
 - [ ] In that allocated buffer, insert the stub inplace of PT_LOAD with X
 - [ ] Update and pad memory map + update entrypoint
 
-## Reading 
+## Reading
 
 - [The OG packer for malware](https://aeb.win.tue.nl/linux/hh/virus/unix-viruses.txt)
 - [Virology blog regarding malware](https://cryptohub.nl/zines/vxheavens/lib/-index=UN&lang=en.htm)
+- [Some assembly background and theory](https://github.com/mschwartz/assembly-tutorial)
 
-# cipher
+## ASM Instruction Cheatsheet
+
+### Making a syscall
+
+[List of syscalls for Linux x86_64](https://syscalls.w3challs.com/?arch=x86_64) and where to store their parameters
+
+| Register name | Argument number |
+| ------------- | --------------- |
+| rdi           | 1st argument    |
+| rsi           | 2nd argument    |
+| rdx           | 3rd argument    |
+| r10           | 4thargument     |
+| r8            | 5th argument    |
+| r9            | 6th argument    |
+
+## cipher
+
 Voici les avantages de RC4 en dehors de la simplicité d'implémentation :
 
 1. Rapidité d'exécution
@@ -57,6 +88,7 @@ RC4 accepte des clés de longueur variable (de 1 à 256 octets) sans changer l'a
 En résumé : au-delà d'être facile à coder, RC4 t'évite les problèmes de padding/alignement liés aux chiffrements par bloc, reste très performant, et correspond à un choix réaliste par rapport aux pratiques du monde du malware.
 
 ### ressources
+
 - [RC4 Encryption Deep Dive: Architecture, Attacks, Cryptanalysis, and Secure Alternatives ](https://www.qcecuring.com/blog/what-is-rc4)
 - Why using /dev/urandom isn't a bad choice to get a random key : [Myths about /dev/urandom](https://www.thomas-huehn.com/myths-about-urandom/)
 - [RC4 Wiki](https://en.wikipedia.org/wiki/RC4)
