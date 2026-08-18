@@ -39,25 +39,33 @@ bool get_xphdr(const Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *
 	ctx->xphdr.txt_vaddress = xphdr.p_vaddr;
 	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + ctx->xphdr.txt_size;
 	ctx->xphdr.cave_lenght = compute_cave_lenght(ctx->xphdr.txt_size);
+
+	size_t total_header_lenght = ctx->xphdr.txt_size + ctx->xphdr.cave_lenght;
+
+	printf("\n%s--- Code cave of %ld bytes was found at offset %ld ---%s\n",
+		   INFO, ctx->xphdr.cave_lenght, ctx->xphdr.cave_offset, RESET);
+	printf("Total header lenght is %ld, which is %s\n",
+		   total_header_lenght, total_header_lenght % x86_64_PAGE_SZ == 0 ? "well formed" : "malformed");
 	return true;
 }
 
-// bool realloc_headers(const Elf64_Ehdr *ehdr, const s_bin_ctx *ctx)
-// {
-// 	extern unsigned char _binary_src_stub_nasm_start[];
-// 	extern unsigned char _binary_src_stub_nasm_end[];
-// 	Elf64_Xword stub_len = _binary_src_stub_nasm_end - _binary_src_stub_nasm_start;
+bool realloc_headers(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx)
+{
+	extern unsigned char _binary_src_stub_nasm_start[];
+	extern unsigned char _binary_src_stub_nasm_end[];
+	Elf64_Xword stub_len = _binary_src_stub_nasm_end - _binary_src_stub_nasm_start;
 
-// 	unsigned char *updated_ehdr = malloc(ehdr->e_ehsize + stub_len);
-// 	if (!updated_ehdr)
-// 		return _perror(strerror(errno));
-// 	ft_memcpy(updated_ehdr, ehdr, ehdr->e_ehsize);
-// 	ft_memcpy(updated_ehdr + ehdr->e_ehsize, _binary_src_stub_nasm_start, stub_len);
-// 	return true;
-// }
+	printf("\n%s--- Code cave has %ld bytes availables for a stub_len of %ld - Copy is %s ---%s\n",
+		   INFO, ctx->xphdr.cave_lenght, stub_len, stub_len < ctx->xphdr.cave_lenght ? "possible" : "impossible", RESET);
 
-// bool update_entrypoint_in_stub()
-// {
-
-// 	return true;
-// }
+	if (stub_len > ctx->xphdr.cave_lenght)
+		_perror("Code cave is too short for stub");
+	unsigned char *updated_ehdr = malloc(ehdr->e_ehsize + stub_len);
+	if (!updated_ehdr)
+		return _perror(strerror(errno));
+	ft_memcpy(updated_ehdr, ehdr, ehdr->e_ehsize);
+	ft_memcpy(updated_ehdr + ctx->xphdr.cave_offset, _binary_src_stub_nasm_start, stub_len);
+	ctx->xphdr.txt_size += stub_len;
+	print_xphdr(&ctx->xphdr);
+	return true;
+}

@@ -94,4 +94,5 @@ bool validate_format(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_i
 // header recovery
 bool get_xphdr(const Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 
-// header modificatio
+// header modification
+bool realloc_headers(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx);

@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), ctx.xphdr.txt_size);
 
 	print_xphdr(&ctx.xphdr);
+	realloc_headers(ehdr, &ctx);
 	free(ctx.xphdr.txt_data);
 	close(bin_fd);
 	return 0;

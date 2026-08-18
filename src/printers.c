@@ -57,33 +57,32 @@ void print_phdr(const Elf64_Phdr *phdr, const int i)
 	printf("Header [%02d]	%-3s	%-15s\n", i, flags, phdr_type_str(phdr->p_type));
 }
 
-// to find the cave
-// figure out how long the text size is
-// find the nearest multiple of 4096
+static bool line_start(Elf64_Xword index) { return index % 16 == 0; }
+static bool line_end(Elf64_Xword index) { return (index + 1) % 16 == 0; }
+static bool size_reached_before_line_end(Elf64_Xword index, Elf64_Xword size) { return index == (size - 1) && !line_end(index); }
+
 void print_xphdr(const s_xphdr *xphdr)
 {
 	char ascii[17] = {0};
-	size_t total_header_lenght = xphdr->txt_size + xphdr->cave_lenght;
 
 	printf("\n%s--- Printing executable text segment of size %lu at offset %ld ---%s\n",
 		   INFO, xphdr->txt_size, xphdr->txt_offset, RESET);
-	printf("\n%s--- Code cave of %ld bytes was found at offset %ld ---%s\n",
-		   INFO, xphdr->cave_lenght, xphdr->cave_offset, RESET);
-
-	printf("Total header lenght is %ld, which is %s\n", 
-		total_header_lenght, total_header_lenght % x86_64_PAGE_SZ == 0 ? "well formed" : "malformed");
 	printf("\n");
 
-	for (Elf64_Xword i = 0; i < total_header_lenght; i++)
+	for (Elf64_Xword i = 0; i < xphdr->txt_size; i++)
 	{
-		if ((i) % 16 == 0)
+		if (line_start(i))
 			printf("%08lX: ", xphdr->txt_offset + i);
 		printf("%02x", xphdr->txt_data[i]);
 		if (i % 2)
 			printf(" ");
 		ascii[i % 16] = xphdr->txt_data[i] >= ' ' && xphdr->txt_data[i] < 127 ? xphdr->txt_data[i] : '.';
-		if ((i + 1) % 16 == 0)
-		{
+		if (size_reached_before_line_end(i, xphdr->txt_size))
+			while (!line_end(i)) {
+				printf("   ");
+				i++;
+			}
+		if (line_end(i)) {
 			printf("	%s\n", ascii);
 			ft_memset(ascii, 0, 17);
 		}
