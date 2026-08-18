@@ -1,4 +1,5 @@
 #include "woody.h"
+
 /*
 	create_cipher_key generates a random key of 16 bytes by reading /dev/urandom
 */
@@ -6,7 +7,6 @@ bool create_cipher_key(unsigned char*  key) {
 	int urandomFd = 0;
 	int bytesRead = 0;
 
-	printf("IN CIPHER\n");
 	urandomFd = open("/dev/urandom", O_RDONLY);
 	if (urandomFd == -1)
 		return _perror("Unable to open urandom");
