@@ -14,7 +14,8 @@ CPPFLAGS = -MMD -MP $(HEADERS)
 SRC +=	main.c \
 		logging.c \
 		printers.c \
-		binary_validation.c
+		binary_validation.c \
+		header_manipulation.c
 
 OBJS:= $(addprefix $(BUILD_DIR),$(SRC:%.c=%.o))
 DEPS:= $(OBJS:%.o=%.d)

@@ -1,15 +1,24 @@
-#define OENTRY 0x401039
+#define OENTRY_OFF 0x401039
 #include "woody.h"
+#include "libft.h"
 
-bool get_xphdr(Elf64_Phdr *phdr, s_bin_ctx *ctx)
+static size_t compute_cave_lenght(Elf64_Xword txt_size)
+{
+	size_t cave_sz = 0;
+	for (; txt_size % x86_64_PAGE_SZ != 0; txt_size++)
+		cave_sz++;
+	return cave_sz;
+}
+
+bool get_xphdr(const Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 {
 	int ephdr_count = 0;
 	Elf64_Phdr xphdr = {0};
-	
-	printf("\n%s--- Program Headers (%d entries) ---%s\n", INFO, ctx->program_hdr_count, RESET);
-	for (int i = 0; i < ctx->program_hdr_count; i++)
+
+	printf("\n%s--- Program Headers (%d entries) ---%s\n", INFO, phdr_info->phdr_count, RESET);
+	for (int i = 0; i < phdr_info->phdr_count; i++)
 	{
-		print_phdr(phdr[i], i);
+		print_phdr(&(phdr[i]), i);
 		if (phdr[i].p_flags & PF_X && phdr[i].p_type == PT_LOAD)
 		{
 			if (ephdr_count == 0)
@@ -19,19 +28,36 @@ bool get_xphdr(Elf64_Phdr *phdr, s_bin_ctx *ctx)
 	}
 	if (ephdr_count == 0)
 		return _perror("Couldn't find any executable headers");
-	if (ephdr_count > 1) 
+	if (ephdr_count > 1)
 	{
 		_plog("Found more than one executable header; Attempting to recover section labels to identify where .text is stored...");
 		// call fallback function exploring header sections to store .text
 		return false;
 	}
-	ctx->text_offset = xphdr.p_offset;
-	ctx->text_size = xphdr.p_filesz;
-	ctx->text_vaddress = xphdr.p_vaddr;
+	ctx->xphdr.txt_offset = xphdr.p_offset;
+	ctx->xphdr.txt_size = xphdr.p_filesz;
+	ctx->xphdr.txt_vaddress = xphdr.p_vaddr;
+	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + ctx->xphdr.txt_size;
+	ctx->xphdr.cave_lenght = compute_cave_lenght(ctx->xphdr.txt_size);
 	return true;
 }
 
-bool update_entrypoint_in_stub()
-{
+// bool realloc_headers(const Elf64_Ehdr *ehdr, const s_bin_ctx *ctx)
+// {
+// 	extern unsigned char _binary_src_stub_nasm_start[];
+// 	extern unsigned char _binary_src_stub_nasm_end[];
+// 	Elf64_Xword stub_len = _binary_src_stub_nasm_end - _binary_src_stub_nasm_start;
 
-}
+// 	unsigned char *updated_ehdr = malloc(ehdr->e_ehsize + stub_len);
+// 	if (!updated_ehdr)
+// 		return _perror(strerror(errno));
+// 	ft_memcpy(updated_ehdr, ehdr, ehdr->e_ehsize);
+// 	ft_memcpy(updated_ehdr + ehdr->e_ehsize, _binary_src_stub_nasm_start, stub_len);
+// 	return true;
+// }
+
+// bool update_entrypoint_in_stub()
+// {
+
+// 	return true;
+// }

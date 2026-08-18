@@ -11,13 +11,7 @@
 Return : `true` if ephdr == 1, `false` otherwise
 */
 
-extern unsigned char _binary_src_stub_nasm_start[];
-extern unsigned char _binary_src_stub_nasm_end[];
-extern unsigned char _binary_src_stub_nasm_size[];
-
-
-
-// bool create_woody_file() 
+// bool create_woody_file()
 // {
 // 	int woody = open("woody", O_CREAT);
 // 	if (!woody)
@@ -43,20 +37,22 @@ int main(int argc, char *argv[])
 
 	// ehdr is the ELF Header ; it holds the info regarding the whole Elf file
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file_map;
+
+	s_pdhr_info phdrs = {0};
 	s_bin_ctx ctx = {0};
-	if (!validate_format(ehdr, &ctx))
+	if (!validate_format(ehdr, &ctx, &phdrs))
 		return false;
 
 	// We use the program offset from ehdr to find the adress of the first program header
-	if (!get_xphdr((Elf64_Phdr *)(file_map + ctx.program_hdr_offset), &ctx))
+	if (!get_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return false;
-	ctx.text_data = malloc(ctx.text_size);
-	if (!ctx.text_data)
+	ctx.xphdr.txt_data = malloc(ctx.xphdr.txt_size);
+	if (!ctx.xphdr.txt_data)
 		return _perror(strerror(errno));
-	ctx.text_data = ft_memcpy(ctx.text_data, (file_map + ctx.text_offset), ctx.text_size);
-	print_text_data(ctx.text_data, ctx.text_size, ctx.text_offset);
-	printf("Checking stub file is correctly baked in woody-woodpacker... Stub Size: %ld\n", _binary_src_stub_nasm_end - _binary_src_stub_nasm_start);
-	free(ctx.text_data);
+	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), ctx.xphdr.txt_size);
+
+	print_xphdr(&ctx.xphdr);
+	free(ctx.xphdr.txt_data);
 	close(bin_fd);
 	return 0;
 }
