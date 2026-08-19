@@ -70,10 +70,12 @@ typedef struct bin_ctx
 {
 	/* A pointer our self-allocated filemap, stored to dump into woody */
 	unsigned char *updated_file_map;
-	/* Original entrypoint of the given binary.
+	/* Pointer to e_entry. We update it with the vadr of the stub appended to the executable PT_LOAD
 	We will use it at the end of the stub to launch the regular execution.
 	Holds `e_entry`*/
-	Elf64_Addr *original_entrypoint;
+	Elf64_Addr *program_entrypoint;
+	/* A backup of the original entrypoint; we store it in order to jump back to the original program execution once the stub has run*/
+	Elf64_Addr orignal_entrypoint;
 	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
 
@@ -88,6 +90,8 @@ void _plog(const char *mess);
 void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
+const char *get_file_type(Elf64_Half type);
+const char *get_file_class(const unsigned char ident[EI_NIDENT]);
 
 // parsing
 bool is_valid_magic(const unsigned char *ident);
@@ -99,8 +103,8 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
 bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 
 // header modification
-bool realloc_headers(void *ehdr, size_t file_len, s_bin_ctx *ctx);
+bool insert_stub(void *ehdr, s_bin_ctx *ctx);
 
 // cipher
-unsigned char* encrypt_text(unsigned char*  key, unsigned char* text, int text_size);
-bool create_cipher_key(unsigned char*  key);
+unsigned char *encrypt_text(unsigned char *key, unsigned char *text, int text_size);
+bool create_cipher_key(unsigned char *key);

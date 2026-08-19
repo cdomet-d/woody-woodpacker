@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "libft.h"
 
-static const char *get_file_type(Elf64_Half type)
+const char *get_file_type(Elf64_Half type)
 {
 	switch (type)
 	{
@@ -19,7 +19,7 @@ static const char *get_file_type(Elf64_Half type)
 	}
 }
 
-static const char *get_file_class(const unsigned char ident[EI_NIDENT])
+const char *get_file_class(const unsigned char ident[EI_NIDENT])
 {
 	switch (ident[EI_CLASS])
 	{
@@ -56,10 +56,11 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 		return _perror("File architecture not supported");
 	if (!is_valid_machine(ehdr->e_machine))
 		return _perror("Machine architecture not supported");
-	ctx->original_entrypoint = &(ehdr->e_entry);
+	ctx->program_entrypoint = &(ehdr->e_entry);
+	ctx->orignal_entrypoint = ehdr->e_entry;
 	phdr_info->phdr_count = ehdr->e_phnum;
 	phdr_info->phdr_offset = ehdr->e_phoff;
 	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident), \
-		*(ctx->original_entrypoint), phdr_info);
+		*(ctx->program_entrypoint), phdr_info);
 	return true;
 }

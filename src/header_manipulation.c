@@ -50,29 +50,31 @@ bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 	return true;
 }
 
-bool realloc_headers(void *ehdr, size_t file_len, s_bin_ctx *ctx)
+// We need this to allocate if the cave code is too small, but it will also need to be rounded to the next multiple of 4096
+// unsigned char *updated_ehdr = malloc(file_len);
+// if (!updated_ehdr)
+// 	return _perror(strerror(errno));
+// ft_memcpy(ehdr, ehdr, file_len);
+// ctx->updated_file_map = ehdr;
+
+bool insert_stub(void *file_map, s_bin_ctx *ctx)
 {
-	extern unsigned char _binary_src_stub_nasm_start[];
-	extern unsigned char _binary_src_stub_nasm_end[];
-	Elf64_Xword stub_len = _binary_src_stub_nasm_end - _binary_src_stub_nasm_start;
+	extern unsigned char _binary_stub_bin_start[];
+	extern unsigned char _binary_stub_bin_end[];
+	Elf64_Xword stub_len = _binary_stub_bin_end - _binary_stub_bin_start;
 
 	printf("\n%s--- Code cave has %ld bytes availables for a stub_len of %ld - Copy is %s ---%s\n",
 		   INFO, ctx->xphdr.cave_lenght, stub_len, stub_len < ctx->xphdr.cave_lenght ? "possible" : "impossible", RESET);
 
-	printf("Cave offset is at %p\n", (void *)((void *)ehdr + ctx->xphdr.cave_offset));
+	printf("Cave offset is at %p\n", (void *)((void *)file_map + ctx->xphdr.cave_offset));
 	if (stub_len > ctx->xphdr.cave_lenght)
 		_perror("Code cave is too short for stub");
-	unsigned char *updated_ehdr = malloc(file_len);
-	if (!updated_ehdr)
-		return _perror(strerror(errno));
-	ft_memcpy(updated_ehdr, ehdr, file_len);
-	ft_memcpy(updated_ehdr + ctx->xphdr.cave_offset, _binary_src_stub_nasm_start, stub_len);
+	ft_memcpy(file_map + ctx->xphdr.cave_offset, _binary_stub_bin_start, stub_len);
+
+	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size);
 	*(ctx->xphdr.txt_size) += stub_len;
-	
 	free(ctx->xphdr.txt_data);
 	ctx->xphdr.txt_data = NULL;
-	ctx->updated_file_map = updated_ehdr;
-	ctx->xphdr.txt_data = updated_ehdr + ctx->xphdr.txt_offset;
-	print_xphdr(&ctx->xphdr);
+	ctx->xphdr.txt_data = file_map + ctx->xphdr.txt_offset;
 	return true;
 }

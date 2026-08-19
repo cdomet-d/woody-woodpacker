@@ -2,7 +2,7 @@ NAME:= woody_woodpacker
 HEADERS:= -I includes/ -I libft/
 LIB:=libft/
 INCLUDE:= -L $(LIB) -lft
-STUB=$(BUILD_DIR)stub.o
+STUB=$(BUILD_DIR)stub_embed.o
 
 BUILD_DIR:= .dir_build/
 SRC_DIR:= src/
@@ -54,7 +54,10 @@ run: all
 vrun: all 
 	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) utils/64sample
 $(STUB): $(SRC_DIR)stub.nasm
-	objcopy -I binary -O elf64-x86-64 -B i386:x86-64 $(SRC_DIR)stub.nasm $(STUB)
+	@mkdir -p $(dir $@)
+	nasm -f elf64 $(SRC_DIR)stub.nasm -o $(BUILD_DIR)stub.o
+	objcopy -O binary $(BUILD_DIR)stub.o $(BUILD_DIR)stub.bin
+	cd $(BUILD_DIR) && objcopy -I binary -O elf64-x86-64 -B i386:x86-64 stub.bin stub_embed.o
 
 FORCE : 
 

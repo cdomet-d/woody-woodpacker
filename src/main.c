@@ -8,14 +8,17 @@
 Return : `true` if ephdr == 1, `false` otherwise
 */
 
-// bool create_woody_file()
-// {
-// 	int woody = open("woody", O_CREAT);
-// 	if (!woody)
-// 		return _perror(strerror(errno));
-
-// 	return true;
-// }
+bool create_woody_file(unsigned char *updated_pbuffer, size_t pbuffer_len)
+{
+	int woody = open("woody",O_WRONLY | O_CREAT | O_TRUNC, 0755);
+	if (!woody)
+		return _perror(strerror(errno));
+	int wret = write(woody, updated_pbuffer, pbuffer_len);
+	if (!wret)
+		return _perror(strerror(errno));
+	close(woody);
+	return true;
+}
 
 void free_and_bail(int fd, unsigned char *txt, unsigned char *cipher)
 {
@@ -52,7 +55,7 @@ int main(int argc, char *argv[])
 	// We use the program offset from ehdr to find the adress of the first program header
 	if (!get_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return false;
-	
+
 	Elf64_Word tsz = *(ctx.xphdr.txt_size);
 
 	ctx.xphdr.txt_data = malloc(tsz);
@@ -79,7 +82,11 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	realloc_headers(file_map, len, &ctx);
+	insert_stub(file_map, &ctx);
+	print_xphdr(&ctx.xphdr);
 	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
+	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
+			*(ctx.program_entrypoint), &phdrs);
+	create_woody_file((unsigned char *)file_map, len);
 	return 0;
 }
