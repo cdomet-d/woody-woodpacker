@@ -1,14 +1,12 @@
-#define OENTRY_OFF 0x401039
+#define OENTRY_OFF 0x2f
 #include "woody.h"
 #include "libft.h"
 
 static size_t compute_cave_lenght(Elf64_Xword *txt_size)
 {
-	size_t cave_sz = 0;
-	Elf64_Word tsz = *(txt_size);
-	for (; tsz % x86_64_PAGE_SZ != 0; tsz++)
-		cave_sz++;
-	return cave_sz;
+	Elf64_Word cpy = *(txt_size);
+	size_t aligned = (cpy + x86_64_PAGE_SZ - 1) & ~(x86_64_PAGE_SZ - 1);
+	return aligned - cpy;
 }
 
 bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
@@ -35,8 +33,10 @@ bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 		// call fallback function exploring header sections to store .text
 		return false;
 	}
+
 	ctx->xphdr.txt_offset = phdr[xphdr_index].p_offset;
 	ctx->xphdr.txt_size = &(phdr[xphdr_index]).p_filesz;
+	ctx->xphdr.mem_size = &(phdr[xphdr_index]).p_memsz;
 	ctx->xphdr.txt_vaddress = phdr[xphdr_index].p_vaddr;
 	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size);
 	ctx->xphdr.cave_lenght = compute_cave_lenght(ctx->xphdr.txt_size);
@@ -66,13 +66,19 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	printf("\n%s--- Code cave has %ld bytes availables for a stub_len of %ld - Copy is %s ---%s\n",
 		   INFO, ctx->xphdr.cave_lenght, stub_len, stub_len < ctx->xphdr.cave_lenght ? "possible" : "impossible", RESET);
 
-	printf("Cave offset is at %p\n", (void *)((void *)file_map + ctx->xphdr.cave_offset));
+	printf("Raw cave offset is %ld\n", ctx->xphdr.cave_offset);
+	printf("Cave offset is at %p\n", (void *)(ctx->xphdr.txt_vaddress + (*(ctx->xphdr.txt_size))));
 	if (stub_len > ctx->xphdr.cave_lenght)
-		_perror("Code cave is too short for stub");
-	ft_memcpy(file_map + ctx->xphdr.cave_offset, _binary_stub_bin_start, stub_len);
+		return _perror("Code cave is too short for stub");
 
+	ft_memcpy(file_map + ctx->xphdr.cave_offset, _binary_stub_bin_start, stub_len);
+	ft_memcpy(file_map + ctx->xphdr.cave_offset + OENTRY_OFF, ctx->program_entrypoint, 8);
+
+	printf("%ld | %ld", *(ctx->xphdr.txt_size), *(ctx->xphdr.mem_size));
 	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size);
 	*(ctx->xphdr.txt_size) += stub_len;
+	*(ctx->xphdr.mem_size) += stub_len;
+
 	free(ctx->xphdr.txt_data);
 	ctx->xphdr.txt_data = NULL;
 	ctx->xphdr.txt_data = file_map + ctx->xphdr.txt_offset;

@@ -70,15 +70,15 @@ void print_xphdr(const s_xphdr *xphdr)
 		   INFO, tsz, xphdr->txt_offset, RESET);
 	printf("\n");
 
-	for (Elf64_Xword i = 0; i < tsz; i++)
+	for (Elf64_Xword i = 0; i < xphdr->cave_lenght; i++)
 	{
 		if (line_start(i))
-			printf("%08lX: ", xphdr->txt_offset + i);
+			printf("%p: ", (void *)(xphdr->txt_vaddress + i));
 		printf("%02x", xphdr->txt_data[i]);
 		if (i % 2)
 			printf(" ");
 		ascii[i % 16] = xphdr->txt_data[i] >= ' ' && xphdr->txt_data[i] < 127 ? xphdr->txt_data[i] : '.';
-		if (size_reached_before_line_end(i, tsz))
+		if (size_reached_before_line_end(i, xphdr->cave_lenght))
 			while (!line_end(i))
 			{
 				printf("   ");

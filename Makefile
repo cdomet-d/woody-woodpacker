@@ -49,10 +49,10 @@ fclean: clean
 re: fclean all
 
 run: all
-	@./$(NAME) utils/64sample
+	@./$(NAME) utils/NOPIEsample
 
 vrun: all 
-	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) utils/64sample
+	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) utils/NOPIEsample
 $(STUB): $(SRC_DIR)stub.nasm
 	@mkdir -p $(dir $@)
 	nasm -f elf64 $(SRC_DIR)stub.nasm -o $(BUILD_DIR)stub.o

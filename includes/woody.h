@@ -36,6 +36,7 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
+	size_t index;
 	/*	The text part offset relative to byte 0 of the file on disk
 	It holds the value of `p_offset` */
 	Elf64_Off txt_offset;
@@ -49,6 +50,8 @@ typedef struct xphdr
 	/* The size of the text section of the program header.
 	It holds the value of `p_filesz` */
 	Elf64_Xword *txt_size;
+
+	Elf64_Xword *mem_size;
 
 	/* Raw .text values for encryption */
 	unsigned char *txt_data;
@@ -75,7 +78,7 @@ typedef struct bin_ctx
 	Holds `e_entry`*/
 	Elf64_Addr *program_entrypoint;
 	/* A backup of the original entrypoint; we store it in order to jump back to the original program execution once the stub has run*/
-	Elf64_Addr orignal_entrypoint;
+	Elf64_Addr original_entrypoint;
 	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
 
@@ -103,7 +106,7 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
 bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 
 // header modification
-bool insert_stub(void *ehdr, s_bin_ctx *ctx);
+bool insert_stub(void *file_map, s_bin_ctx *ctx);
 
 // cipher
 unsigned char *encrypt_text(unsigned char *key, unsigned char *text, int text_size);

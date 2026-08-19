@@ -84,9 +84,9 @@ int main(int argc, char *argv[])
 
 	insert_stub(file_map, &ctx);
 	print_xphdr(&ctx.xphdr);
-	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
 	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
 			*(ctx.program_entrypoint), &phdrs);
-	create_woody_file((unsigned char *)file_map, len);
+	create_woody_file(file_map, len);
+	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
 	return 0;
 }

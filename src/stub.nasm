@@ -11,6 +11,6 @@ syscall
 mov rax, [ rel o_entry] 
 jmp rax
 
-msg: dq "....WOODY....", 10
+msg: db "....WOODY....", 10
 msg_len : equ $ - msg 
-o_entry: db 0
+o_entry: dq 0
