@@ -64,12 +64,13 @@ static bool size_reached_before_line_end(Elf64_Xword index, Elf64_Xword size) { 
 void print_xphdr(const s_xphdr *xphdr)
 {
 	char ascii[17] = {0};
+	Elf64_Word tsz = *(xphdr->txt_size);
 
-	printf("\n%s--- Printing executable text segment of size %lu at offset %ld ---%s\n",
-		   INFO, xphdr->txt_size, xphdr->txt_offset, RESET);
+	printf("\n%s--- Printing executable text segment of size %u at offset %ld ---%s\n",
+		   INFO, tsz, xphdr->txt_offset, RESET);
 	printf("\n");
 
-	for (Elf64_Xword i = 0; i < xphdr->txt_size; i++)
+	for (Elf64_Xword i = 0; i < tsz; i++)
 	{
 		if (line_start(i))
 			printf("%08lX: ", xphdr->txt_offset + i);
@@ -77,12 +78,14 @@ void print_xphdr(const s_xphdr *xphdr)
 		if (i % 2)
 			printf(" ");
 		ascii[i % 16] = xphdr->txt_data[i] >= ' ' && xphdr->txt_data[i] < 127 ? xphdr->txt_data[i] : '.';
-		if (size_reached_before_line_end(i, xphdr->txt_size))
-			while (!line_end(i)) {
+		if (size_reached_before_line_end(i, tsz))
+			while (!line_end(i))
+			{
 				printf("   ");
 				i++;
 			}
-		if (line_end(i)) {
+		if (line_end(i))
+		{
 			printf("	%s\n", ascii);
 			ft_memset(ascii, 0, 17);
 		}

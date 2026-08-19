@@ -17,6 +17,15 @@ Return : `true` if ephdr == 1, `false` otherwise
 // 	return true;
 // }
 
+void free_and_bail(int fd, unsigned char *txt, unsigned char *cipher)
+{
+	close(fd);
+	if (txt)
+		free(txt);
+	if (cipher)
+		free(cipher);
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -43,29 +52,34 @@ int main(int argc, char *argv[])
 	// We use the program offset from ehdr to find the adress of the first program header
 	if (!get_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return false;
-	ctx.xphdr.txt_data = malloc(ctx.xphdr.txt_size);
+	
+	Elf64_Word tsz = *(ctx.xphdr.txt_size);
+
+	ctx.xphdr.txt_data = malloc(tsz);
 	if (!ctx.xphdr.txt_data)
 		return _perror(strerror(errno));
-	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), ctx.xphdr.txt_size);
+	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), tsz);
 
 	print_xphdr(&ctx.xphdr);
-	
-	// key creation
-	unsigned char  key[16];
-	ft_bzero(key, 16);
-	if (!create_cipher_key(key))
-		return 1;
-	
-	// text encryption
-	unsigned char* cipherText = NULL;
-	cipherText = encrypt_text(key, ctx.xphdr.txt_data, ctx.xphdr.txt_size);
-	if (!cipherText)
-		return 1;
 
-	realloc_headers(ehdr, &ctx);
-	free(ctx.xphdr.txt_data);
-	close(bin_fd);
-	free(cipherText);
+	// key creation
+	unsigned char key[16] = {0};
+	if (!create_cipher_key(key))
+	{
+		free_and_bail(bin_fd, ctx.xphdr.txt_data, NULL);
+		return 1;
+	}
+
+	// text encryption
+	unsigned char *cipherText = NULL;
+	cipherText = encrypt_text(key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
+	if (!cipherText)
+	{
+		free_and_bail(bin_fd, ctx.xphdr.txt_data, cipherText);
+		return 1;
+	}
+
+	realloc_headers(file_map, len, &ctx);
+	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
 	return 0;
 }
-
