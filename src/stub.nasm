@@ -27,7 +27,7 @@ _ksa:
     mov rdi, 0
     mov rsi, 0
 
-_loop:
+_loop_ksa:
     cmp rdi, 256
     je _prga
     mov rsi, rsi + byte [rax + rdi] + byte [key + rdi] % 16
@@ -38,9 +38,30 @@ _loop:
     mov byte [rax + rsi], bl
     
     inc rdi
-    jmp _loop
+    jmp _loop_ksa
 
 _prga:
+    mov rdi, 0
+    mov rsi, 0
+    mov rdx, 0
+    mov rcx, 0
+
+_loop_prga:
+    cmp rcx, text_size
+    je _run_text
+    mov rdi, rdi + 1 % 256
+    mov rsi, rsi + byte [rax + rdi] % 256
+
+    mov bl, byte [rax + rdi]
+    mov cl, byte [rax + rsi]
+    mov byte [rax + rdi], cl
+    mov byte [rax + rsi], bl
+
+    mov rdx, byte [rax + rdi] + byte [rax + rsi] % 256
+    mov byte [text + rcx], byte [rax + rdx] XOR byte [ciphertext + rcx]
+    inc rcx
+    jmp _loop_prga
+
 
 ;_swap_values:
 ;    mov bl, byte [rax + rdi]
@@ -51,8 +72,9 @@ _prga:
 .error:
     ret
 
-mov rax, [ rel o_entry] 
-jmp rax
+_run_text:
+    mov rax, [ rel o_entry] 
+    jmp rax
 
 msg: dq "....WOODY....", 10
 msg_len : equ $ - msg 
