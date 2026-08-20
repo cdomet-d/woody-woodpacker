@@ -29,7 +29,7 @@ void init_array_S(unsigned char* S) {
 /*
 	swap_S_values swaps two values of a given array
 */
-void swap_S_values(unsigned char*  S, int i , int j) {
+void swap_S_values(unsigned char*  S, int i, int j) {
 	char tmp = S[i];
 
 	S[i] = S[j];
@@ -39,7 +39,7 @@ void swap_S_values(unsigned char*  S, int i , int j) {
 /*
 	Key-scheduling algorithm 
 */
-void ksa(unsigned char*  S, unsigned char*  key) {
+void ksa(unsigned char* S, unsigned char* key) {
 	int i = 0;
 	int j = 0;
 
@@ -54,35 +54,26 @@ void ksa(unsigned char*  S, unsigned char*  key) {
 /*
 	Pseudo-random generation algorithm
 */
-bool prga(unsigned char* cipherText, unsigned char*  S, unsigned char* text, int text_size) {
+void prga(unsigned char*  S, unsigned char* text, int text_size) {
 	int i = 0;
 	int j = 0;
 	int t = 0;
-	int idx = 0;
 
-	while (idx < text_size) {
+	for (int idx = 0; idx < text_size; idx++) {
 		i = (i + 1) % 256;
 		j = (j + S[i]) % 256;
 		swap_S_values(S, i, j);
 		t = (S[i] + S[j]) % 256;
-		cipherText[idx] = S[t] ^ text[idx]; //XOR
-		idx++;
+		text[idx] ^= S[t]; //XOR
 	}
-	return true;
 }
 
-unsigned char* encrypt_text(unsigned char* key, unsigned char* text, int text_size) {
-	unsigned char* cipherText = NULL;
+void encrypt_text(unsigned char* key, unsigned char* text, int text_size) {
 	unsigned char  S[256];
 
-	cipherText = ft_calloc(sizeof(unsigned char), text_size);
-	if (cipherText == NULL)
-		return (_perror("cipherText malloc failed"), NULL);
 	ft_bzero(S, 256);
 	ksa(S, key);
-	if (!prga(cipherText, S, text, text_size))
-		return NULL;
-	return cipherText;
+	prga(S, text, text_size);
 }
 
 /*

@@ -57,10 +57,7 @@ int main(int argc, char *argv[])
 		return 1;
 	
 	// text encryption
-	unsigned char* cipherText = NULL;
-	cipherText = encrypt_text(key, ctx.xphdr.txt_data, ctx.xphdr.txt_size);
-	if (!cipherText)
-		return 1;
+	encrypt_text(key, ctx.xphdr.txt_data, ctx.xphdr.txt_size)
 
 	realloc_headers(ehdr, &ctx);
 	free(ctx.xphdr.txt_data);
