@@ -22,9 +22,10 @@ bool create_woody_file(unsigned char *updated_pbuffer, size_t pbuffer_len)
 
 void free_and_bail(int fd, unsigned char *txt, unsigned char *cipher)
 {
+	(void)txt;
 	close(fd);
-	if (txt)
-		free(txt);
+	// if (txt)
+	// 	free(txt);
 	if (cipher)
 		free(cipher);
 }
@@ -39,16 +40,14 @@ int main(int argc, char *argv[])
 	size_t len = lseek(bin_fd, 0, SEEK_END);
 	lseek(bin_fd, 0, SEEK_SET);
 
-	// We need PROT_WRITE so we can write our changes to the binary (encryption, stub injection, etc...)
 	void *file_map = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_PRIVATE, bin_fd, 0);
 	if (file_map == MAP_FAILED)
 		return _perror(strerror(errno));
 
-	// ehdr is the ELF Header ; it holds the info regarding the whole Elf file
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file_map;
-
 	s_pdhr_info phdrs = {0};
 	s_bin_ctx ctx = {0};
+
 	if (!validate_format(ehdr, &ctx, &phdrs))
 		return false;
 
@@ -56,15 +55,14 @@ int main(int argc, char *argv[])
 	if (!get_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return false;
 
-	Elf64_Word tsz = *(ctx.xphdr.txt_size);
+	// Elf64_Word tsz = *(ctx.xphdr.txt_size);
 
-	ctx.xphdr.txt_data = malloc(tsz);
-	if (!ctx.xphdr.txt_data)
-		return _perror(strerror(errno));
-	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), tsz);
+	ctx.xphdr.txt_data = (unsigned char *)(file_map + ctx.xphdr.txt_offset);
+	// malloc(tsz);
+	// if (!ctx.xphdr.txt_data)
+	// 	return _perror(strerror(errno));
+	// ft_memcpy(ctx.xphdr.txt_data, , tsz);
 
-	// print_xphdr(&ctx.xphdr);
-	// hexdump(&ctx.xphdr);
 	// key creation
 	unsigned char key[16] = {0};
 	if (!create_cipher_key(key))

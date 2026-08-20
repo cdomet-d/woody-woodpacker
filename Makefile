@@ -49,7 +49,7 @@ fclean: clean
 re: fclean all
 
 run: all
-	@./$(NAME) utils/NOPIEsample
+	./$(NAME) utils/64sample
 
 vrun: all 
 	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) utils/NOPIEsample
