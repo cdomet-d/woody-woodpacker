@@ -95,6 +95,7 @@ void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
 const char *get_file_type(Elf64_Half type);
 const char *get_file_class(const unsigned char ident[EI_NIDENT]);
+void hexdump(const s_xphdr *xphdr);
 
 // parsing
 bool is_valid_magic(const unsigned char *ident);

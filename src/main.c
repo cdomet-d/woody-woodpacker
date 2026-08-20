@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 		return _perror(strerror(errno));
 	ft_memcpy(ctx.xphdr.txt_data, (file_map + ctx.xphdr.txt_offset), tsz);
 
-	print_xphdr(&ctx.xphdr);
-
+	// print_xphdr(&ctx.xphdr);
+	// hexdump(&ctx.xphdr);
 	// key creation
 	unsigned char key[16] = {0};
 	if (!create_cipher_key(key))
@@ -83,9 +83,10 @@ int main(int argc, char *argv[])
 	}
 
 	insert_stub(file_map, &ctx);
-	print_xphdr(&ctx.xphdr);
-	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
-			*(ctx.program_entrypoint), &phdrs);
+	// print_xphdr(&ctx.xphdr);
+	// print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
+		// *(ctx.program_entrypoint), &phdrs);
+	// hexdump(&ctx.xphdr);
 	create_woody_file(file_map, len);
 	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
 	return 0;

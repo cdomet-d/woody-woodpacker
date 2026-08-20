@@ -1,5 +1,5 @@
 .dir_build
-woody_woodpacker
+woody*
 libft/libft.a
 libft/.lib_build
 out

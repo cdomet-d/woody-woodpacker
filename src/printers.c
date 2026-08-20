@@ -92,3 +92,11 @@ void print_xphdr(const s_xphdr *xphdr)
 	}
 	printf("\n");
 }
+
+void hexdump(const s_xphdr *xphdr)
+{
+	for (Elf64_Xword i = 0; i < xphdr->cave_lenght; i++)
+	{
+		printf("x%02x ", xphdr->txt_data[i]);
+	}
+}
