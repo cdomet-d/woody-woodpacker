@@ -39,6 +39,7 @@ This project is about coding a simple packer
 - [The OG packer for malware](https://aeb.win.tue.nl/linux/hh/virus/unix-viruses.txt)
 - [Virology blog regarding malware](https://cryptohub.nl/zines/vxheavens/lib/-index=UN&lang=en.htm)
 - [Some assembly background and theory](https://github.com/mschwartz/assembly-tutorial)
+- [x86-64 Registers](https://math.hws.edu/eck/cs220/f22/registers.html)
 
 ## ASM Instruction Cheatsheet
 
