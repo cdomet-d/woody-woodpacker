@@ -4,28 +4,21 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
-/* Finds and stores the executable header of the binary, which contains .text
-Return : `true` if ephdr == 1, `false` otherwise
-*/
-
 bool create_woody_file(unsigned char *updated_pbuffer, size_t pbuffer_len)
 {
-	int woody = open("woody",O_WRONLY | O_CREAT | O_TRUNC, 0755);
+	int woody = open("woody", O_WRONLY | O_CREAT | O_TRUNC, 0755);
 	if (!woody)
 		return _perror(strerror(errno));
 	int wret = write(woody, updated_pbuffer, pbuffer_len);
+	close(woody);
 	if (!wret)
 		return _perror(strerror(errno));
-	close(woody);
 	return true;
 }
 
-void free_and_bail(int fd, unsigned char *txt, unsigned char *cipher)
+static void free_and_bail(int fd, unsigned char *cipher)
 {
-	(void)txt;
 	close(fd);
-	// if (txt)
-	// 	free(txt);
 	if (cipher)
 		free(cipher);
 }
@@ -35,10 +28,14 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		return _perror("Usage: ./woody_woodpacker <binary>");
 	int bin_fd = open(argv[1], O_RDONLY);
-	if (bin_fd == -1)
+	if (!bin_fd)
 		return _perror(strerror(errno));
-	size_t len = lseek(bin_fd, 0, SEEK_END);
-	lseek(bin_fd, 0, SEEK_SET);
+	off_t len = lseek(bin_fd, 0, SEEK_END);
+	if (len == -1)
+		return _perror(strerror(errno));
+	off_t sret = lseek(bin_fd, 0, SEEK_SET);
+	if (sret == -1)
+		return _perror(strerror(errno));
 
 	void *file_map = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_PRIVATE, bin_fd, 0);
 	if (file_map == MAP_FAILED)
@@ -50,42 +47,28 @@ int main(int argc, char *argv[])
 
 	if (!validate_format(ehdr, &ctx, &phdrs))
 		return false;
-
-	// We use the program offset from ehdr to find the adress of the first program header
-	if (!get_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
+	if (!find_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return false;
 
-	// Elf64_Word tsz = *(ctx.xphdr.txt_size);
-
 	ctx.xphdr.txt_data = (unsigned char *)(file_map + ctx.xphdr.txt_offset);
-	// malloc(tsz);
-	// if (!ctx.xphdr.txt_data)
-	// 	return _perror(strerror(errno));
-	// ft_memcpy(ctx.xphdr.txt_data, , tsz);
 
-	// key creation
 	unsigned char key[16] = {0};
 	if (!create_cipher_key(key))
 	{
-		free_and_bail(bin_fd, ctx.xphdr.txt_data, NULL);
+		free_and_bail(bin_fd, NULL);
 		return 1;
 	}
 
-	// text encryption
 	unsigned char *cipherText = NULL;
 	cipherText = encrypt_text(key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
 	if (!cipherText)
 	{
-		free_and_bail(bin_fd, ctx.xphdr.txt_data, cipherText);
+		free_and_bail(bin_fd, cipherText);
 		return 1;
 	}
 
 	insert_stub(file_map, &ctx);
-	// print_xphdr(&ctx.xphdr);
-	// print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
-		// *(ctx.program_entrypoint), &phdrs);
-	// hexdump(&ctx.xphdr);
 	create_woody_file(file_map, len);
-	free_and_bail(bin_fd, ctx.updated_file_map, cipherText);
+	free_and_bail(bin_fd, cipherText);
 	return 0;
 }

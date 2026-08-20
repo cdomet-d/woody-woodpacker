@@ -9,7 +9,10 @@ static size_t compute_cave_lenght(Elf64_Xword txt_size)
 	return aligned - txt_size;
 }
 
-bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
+/* Finds and stores the executable PT_LOAD segment of the binary, which contains the .text section
+Return : `true` if ephdr == 1, `false` otherwise
+*/
+bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 {
 	int ephdr_count = 0;
 	int xphdr_index = 0;
@@ -23,7 +26,7 @@ bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 			ephdr_count++;
 		}
 	}
-	
+
 	if (ephdr_count == 0)
 		return _perror("Couldn't find any executable headers");
 	if (ephdr_count > 1)

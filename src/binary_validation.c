@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "libft.h"
 
-const char *get_file_type(Elf64_Half type)
+static const char *get_file_type(Elf64_Half type)
 {
 	switch (type)
 	{
@@ -19,7 +19,7 @@ const char *get_file_type(Elf64_Half type)
 	}
 }
 
-const char *get_file_class(const unsigned char ident[EI_NIDENT])
+static const char *get_file_class(const unsigned char ident[EI_NIDENT])
 {
 	switch (ident[EI_CLASS])
 	{

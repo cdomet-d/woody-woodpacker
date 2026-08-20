@@ -93,8 +93,6 @@ void _plog(const char *mess);
 void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
-const char *get_file_type(Elf64_Half type);
-const char *get_file_class(const unsigned char ident[EI_NIDENT]);
 void hexdump(const s_xphdr *xphdr);
 
 // parsing
@@ -104,7 +102,7 @@ bool is_valid_machine(const int e_machine);
 bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
 
 // header recovery
-bool get_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
+bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 
 // header modification
 bool insert_stub(void *file_map, s_bin_ctx *ctx);
