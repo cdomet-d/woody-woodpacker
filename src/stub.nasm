@@ -1,7 +1,6 @@
 BITS 64
 [section .text]
     global _stub_start
-    extern malloc
 
 _stub_start:
     mov rax, 1 
@@ -10,30 +9,41 @@ _stub_start:
     mov rdx, msg_len
     syscall
 
+
+; registers needed
+; S -> rbx
+; int i -> rdi
+; int j -> rsi
+; r12 -> key
+; r13 -> text
+
 _decrypt_text:
-    mov rdi, 256
-    call malloc wrt ..plt
-    cmp rax, 0
-    je .error
+    lea rbx, [rel S]
     mov rdi, 0
-    call _init_S
+
+_init_S:
+    cmp rdi, 256
+    je _ksa
+    mov byte [rbx + rdi], rdi   ; S[i] = i
+    inc rdi
+    jmp _init_S
 
 _ksa:
-    mov rdi, 0
-    mov rsi, 0
+    mov rdi, 0          ; int i
+    mov rsi, 0          ; int j
+    lea r12, [rel key]  ; key
 
 _loop_ksa:
     cmp rdi, 256
     je _prga
 
-    lea rdx, [rel key]
-    mov rcx, rdi
-    and rcx, 0xF ; % 16
-    mov r8b, byte [key + rcx]
-    mov r9b, byte [rax + rdi]
-    add rsi, r8b
-    add rsi, r9b
-    and rsi, 0xFF ; % 256
+    mov rax, rdi
+    and rax, key_len - 1 ; % 16     ; i % 16
+    movzx rax, byte [r12 + rax]     ; key[i % 16]
+    add rsi, rax                    ; j + key[i % 16]
+    movzx rax, byte [rbx + rdi]     ; S[i]
+    add rsi, rax                    ; j + S[i]
+    and rsi, 0xFF ; % 256           ; j % 256
 
     call _swap_values
     
@@ -41,57 +51,48 @@ _loop_ksa:
     jmp _loop_ksa
 
 _prga:
-    mov rdi, 0
-    mov rsi, 0
-    mov rdx, 0
-    lea rcx, [rel text_size]
-    mov r10, [rcx]
-    mov rcx, 0
-    lea r11, [rel text]
+    mov rdi, 0                  ; int i
+    mov rsi, 0                  ; int j
+    mov rdx, 0                  ; int idx
+    mov r10, [rel text_size]    ; text_size
+    lea rax, [rel text]
+    mov r13, [rax]              ; text
 
 _loop_prga:
-    cmp rcx, r10
+    cmp rdx, r10
     je _run_text
-    add rdi, 1
-    and rdi, 0xFF
-    mov r8b, byte [rax + rdi]
-    add rsi, r8b
-    and rsi, 0xFF
+    add rdi, 1                      ; i + 1
+    and rdi, 0xFF                   ; i % 256
+    movzx r8, byte [rbx + rdi]      ; S[i]
+    add rsi, r8                     ; j + S[i]
+    and rsi, 0xFF                   ; j % 256
 
-    call swap_values
+    call _swap_values
 
-    add rdx, r8b
-    mov r9b, byte [rax + rsi]
-    add rdx, r9b
-    and rdx, 0xFF
-    mov r8b, byte [rax + rdx]
-    and byte [r11 + rcx], r8b
+    mov rax, 0                      ; int t
+    add rax, r8                     ; t + S[i]
+    movzx r9, byte [rbx + rsi]      ; S[j]
+    add rax, r9                     ; t + S[j]
+    and rax, 0xFF                   ; t % 256
+    movzx rax, byte [rbx + rax]     ; S[t]
+    and byte [r13 + rdx], al        ; text[idx] XOR S[t]
 
-    inc rcx
+    inc rdx
     jmp _loop_prga
 
-_run_text:
-    mov rax, [ rel o_entry] 
-    jmp rax
-
-
-;utils
-
 _swap_values:
-    mov bl, byte [rax + rdi]
-    mov cl, byte [rax + rsi]
-    mov byte [rax + rdi], cl
-    mov byte [rax + rsi], bl
-
-_init_S:
-    cmp rdi, 256
-    je _ksa
-    mov byte [rax + rdi], rdi
-    inc rdi
-    jmp _init_S
-
-.error:
+    mov al, byte [rbx + rdi]
+    mov cl, byte [rbx + rsi]
+    mov byte [rbx + rdi], cl
+    mov byte [rbx + rsi], al
     ret
+
+_run_text:
+    mov rbx, 0
+    mov r12, 0
+    mov r13, 0
+    mov rax, [rel o_entry] 
+    jmp rax
 
 [section .data]
     text: dq 0
@@ -101,3 +102,6 @@ _init_S:
     msg: dq "....WOODY....", 10
     msg_len: equ $ - msg 
     o_entry: db 0
+
+[section .bss]
+    S: resb 256
