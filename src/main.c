@@ -16,13 +16,6 @@ bool create_woody_file(unsigned char *updated_pbuffer, size_t pbuffer_len)
 	return true;
 }
 
-static void free_and_bail(int fd, unsigned char *cipher)
-{
-	close(fd);
-	if (cipher)
-		free(cipher);
-}
-
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -53,9 +46,8 @@ int main(int argc, char *argv[])
 	ctx.xphdr.txt_data = (unsigned char *)(file_map + ctx.xphdr.txt_offset);
 
 	unsigned char key[16] = {0};
-	if (!create_cipher_key(key))
-	{
-		free_and_bail(bin_fd, NULL);
+	if (!create_cipher_key(key)) {
+		close(bin_fd);
 		return 1;
 	}
 
@@ -63,6 +55,6 @@ int main(int argc, char *argv[])
 
 	insert_stub(file_map, &ctx);
 	create_woody_file(file_map, len);
-	free_and_bail(bin_fd, NULL);
+	close(bin_fd);
 	return 0;
 }
