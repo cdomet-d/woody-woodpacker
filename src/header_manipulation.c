@@ -1,8 +1,8 @@
-#define OENTRY_OFF 0x16f
-#define STUB_VADDR_OFF 0x177
-#define TEXT_OFF 0x141
-#define TEXTSZ_OFF 0x149
-#define KEY_OFF 0x151
+#define KEY_OFF 0x174
+#define OENTRY_OFF 0x192
+#define STUB_VADDR_OFF 0x19a
+#define TEXT_OFF 0x164
+#define TEXTSZ_OFF 0x16c
 
 #include "woody.h"
 #include "libft.h"
@@ -79,7 +79,6 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 
 	*(ctx->xphdr.txt_size) += stub_len;
 	*(ctx->xphdr.mem_size) += stub_len;
-	printf("%ld\n", *(ctx->xphdr.txt_size));
 
 	return true;
 }
