@@ -45,16 +45,16 @@ int main(int argc, char *argv[])
 
 	ctx.xphdr.txt_data = (unsigned char *)(file_map + ctx.xphdr.txt_offset);
 
-	unsigned char key[16] = {0};
-	if (!create_cipher_key(key)) {
+	if (!create_cipher_key(ctx.key)) {
 		close(bin_fd);
 		return 1;
 	}
-
-	encrypt_text(key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
-
+	encrypt_text(ctx.key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
 	insert_stub(file_map, &ctx);
+	ehdr->e_type = 2;
+	print_xphdr(&(ctx.xphdr));
 	create_woody_file(file_map, len);
+
 	close(bin_fd);
 	return 0;
 }

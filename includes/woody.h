@@ -82,6 +82,8 @@ typedef struct bin_ctx
 	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
 
+	unsigned char key[16];
+
 } s_bin_ctx;
 
 // logging
@@ -108,5 +110,5 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 bool insert_stub(void *file_map, s_bin_ctx *ctx);
 
 // cipher
-unsigned char *encrypt_text(unsigned char *key, unsigned char *text, int text_size);
+void encrypt_text(unsigned char *key, unsigned char *text, int text_size);
 bool create_cipher_key(unsigned char *key);
