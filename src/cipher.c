@@ -10,8 +10,11 @@ bool create_cipher_key(unsigned char*  key) {
 	if (urandomFd == -1)
 		return _perror("Unable to open urandom");
 	bytesRead = read(urandomFd, key, 16);
-	if (bytesRead == -1 || bytesRead != 16)
+	if (bytesRead == -1 || bytesRead != 16) {
+		if (close(urandomFd) == -1)
+			return _perror("Unable to close urandomFd");
 		return _perror("Unable to read urandom");
+	}
 	if (close(urandomFd) == -1)
 		return _perror("Unable to close urandomFd");
 	return true;
