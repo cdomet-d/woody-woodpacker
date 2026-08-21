@@ -70,7 +70,7 @@ _loop_prga:
     call _swap_values
 
     mov rax, 0                      ; int t
-    add rax, r8                     ; t + S[i]
+    add rax, r8   ;!!!!!!! r8 might be changed?      ; t + S[i]
     movzx r9, byte [rbx + rsi]      ; S[j]
     add rax, r9                     ; t + S[j]
     and rax, 0xFF                   ; t % 256
