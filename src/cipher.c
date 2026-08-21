@@ -70,7 +70,8 @@ void prga(unsigned char*  S, unsigned char* text, int text_size) {
 	}
 }
 
-void encrypt_text(unsigned char* key, unsigned char* text, int text_size) { //TODO: change int to elfuint64
+void encrypt_text(unsigned char* key, unsigned char* text, int text_size) {
+	//TODO: change int to elfuint64
 	unsigned char  S[256];
 
 	ft_bzero(S, 256);
