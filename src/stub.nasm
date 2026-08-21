@@ -1,8 +1,6 @@
 BITS 64
 ;[section .text]
     global _stub_start
-    extern malloc
-    extern free
 
 _stub_start:
     mov rax, 1 
@@ -10,14 +8,34 @@ _stub_start:
     lea rsi, [rel msg]
     mov rdx, msg_len
     syscall
+    xor rdx, rdx
+
+
+_get_offset:
+    lea r14, [rel _stub_start]
+    mov rcx, [rel stub_vaddr]
+    sub r14, rcx
+    test r14, r14
+    jns _decrypt_text
+    neg r14
+
+_mprotect:
+    mov r15, [rel text_size]     ; text_size
+    mov rax, [rel o_entry]
+    add rax, r14
+    and rax, ~0xFFF        
+    mov rdi, rax 
+
+    mov rsi, r15
+    add rsi, stub_size + 256
+    add rsi, 4095
+    and rsi, -4096
+    mov rdx, 7  
+    mov rax, 10  
+    syscall
 
 _decrypt_text:
-    ;lea rbx, [rel S]
-    mov rdi, 256
-    call malloc wrt ..plt
-    cmp rax, 0
-    je _error
-    mov rbx, rax
+    lea rbx, [rel S]
     mov rdi, 0
 
 _init_S:
@@ -53,12 +71,12 @@ _prga:
     mov rdi, 0                  ; int i
     mov rsi, 0                  ; int j
     mov rdx, 0                  ; int idx
-    mov r9, [rel text_size]     ; text_size
     lea rax, [rel text]
     mov r13, [rax]              ; text
+    add r13, r14
 
 _loop_prga:
-    cmp rdx, r9
+    cmp rdx, r15
     je _run_text
     add rdi, 1                      ; i + 1
     and rdi, 0xFF                   ; i % 256
@@ -68,6 +86,8 @@ _loop_prga:
 
     call _swap_values
 
+    mov rax, 0
+    movzx r8, byte [rbx + rdi]      ; S[i]
     add rax, r8                     ; t + S[i]
     movzx r8, byte [rbx + rsi]      ; S[j]
     add rax, r8                     ; t + S[j]
@@ -88,35 +108,21 @@ _swap_values:
 _run_text:
     mov r12, 0
     mov r13, 0
-    mov rdi, rbx
-    call free wrt ..plt
-    lea rbx, [rel _stub_start]
-    mov rcx, [rel stub_vaddr]
-    sub rbx, rcx
-    test rbx, rbx
-    jns _positive
-    neg rbx
 
-_positive:
     mov rax, [rel o_entry] 
-    add rax, rbx
+    add rax, r14
     xor rdx, rdx 
     jmp rax
 
-_error:
-    mov rax, 60
-    mov rdi, 1
-    syscall
+_stub_end:
 
-;[section .data]
-    text: dq 0
-    text_size: dq 0
-    key: times 16 db 0x00
-    key_len: equ 16
-    msg: db "....WOODY....", 10
-    msg_len: equ $ - msg 
-    o_entry: dq 0
-    stub_vaddr: dq 0
-
-;[section .bss]
-;    S: resb 256
+text: dq 0
+text_size: dq 0
+key: times 16 db 0x00
+key_len: equ 16
+msg: db "....WOODY....", 10
+msg_len: equ $ - msg 
+o_entry: dq 0
+stub_vaddr: dq 0
+S: times 256 db 0x00
+stub_size: equ _stub_end - _stub_start
