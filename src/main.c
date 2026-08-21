@@ -51,8 +51,6 @@ int main(int argc, char *argv[])
 	}
 	encrypt_text(ctx.key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
 	insert_stub(file_map, &ctx);
-	ehdr->e_type = 2;
-	print_xphdr(&(ctx.xphdr));
 	create_woody_file(file_map, len);
 
 	close(bin_fd);
