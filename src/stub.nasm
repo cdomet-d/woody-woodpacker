@@ -1,6 +1,8 @@
 BITS 64
-[section .text]
+;[section .text]
     global _stub_start
+    extern malloc
+    extern free
 
 _stub_start:
     mov rax, 1 
@@ -9,22 +11,19 @@ _stub_start:
     mov rdx, msg_len
     syscall
 
-
-; registers needed
-; S -> rbx
-; int i -> rdi
-; int j -> rsi
-; r12 -> key
-; r13 -> text
-
 _decrypt_text:
-    lea rbx, [rel S]
+    ;lea rbx, [rel S]
+    mov rdi, 256
+    call malloc wrt ..plt
+    cmp rax, 0
+    je _error
+    mov rbx, rax
     mov rdi, 0
 
 _init_S:
     cmp rdi, 256
     je _ksa
-    mov byte [rbx + rdi], rdi   ; S[i] = i
+    mov byte [rbx + rdi], dil   ; S[i] = i
     inc rdi
     jmp _init_S
 
@@ -54,12 +53,12 @@ _prga:
     mov rdi, 0                  ; int i
     mov rsi, 0                  ; int j
     mov rdx, 0                  ; int idx
-    mov r10, [rel text_size]    ; text_size
+    mov r9, [rel text_size]     ; text_size
     lea rax, [rel text]
     mov r13, [rax]              ; text
 
 _loop_prga:
-    cmp rdx, r10
+    cmp rdx, r9
     je _run_text
     add rdi, 1                      ; i + 1
     and rdi, 0xFF                   ; i % 256
@@ -69,13 +68,12 @@ _loop_prga:
 
     call _swap_values
 
-    mov rax, 0                      ; int t
-    add rax, r8   ;!!!!!!! r8 might be changed?      ; t + S[i]
-    movzx r9, byte [rbx + rsi]      ; S[j]
-    add rax, r9                     ; t + S[j]
+    add rax, r8                     ; t + S[i]
+    movzx r8, byte [rbx + rsi]      ; S[j]
+    add rax, r8                     ; t + S[j]
     and rax, 0xFF                   ; t % 256
     movzx rax, byte [rbx + rax]     ; S[t]
-    and byte [r13 + rdx], al        ; text[idx] XOR S[t]
+    xor byte [r13 + rdx], al        ; text[idx] XOR S[t]
 
     inc rdx
     jmp _loop_prga
@@ -88,18 +86,29 @@ _swap_values:
     ret
 
 _run_text:
-    mov rbx, 0
     mov r12, 0
     mov r13, 0
+    mov rdi, rbx
+    call free wrt ..plt
     lea rbx, [rel _stub_start]
     mov rcx, [rel stub_vaddr]
     sub rbx, rcx
+    test rbx, rbx
+    jns _positive
+    neg rbx
+
+_positive:
     mov rax, [rel o_entry] 
     add rax, rbx
     xor rdx, rdx 
     jmp rax
 
-[section .data]
+_error:
+    mov rax, 60
+    mov rdi, 1
+    syscall
+
+;[section .data]
     text: dq 0
     text_size: dq 0
     key: times 16 db 0x00
@@ -109,5 +118,5 @@ _run_text:
     o_entry: dq 0
     stub_vaddr: dq 0
 
-[section .bss]
-    S: resb 256
+;[section .bss]
+;    S: resb 256
