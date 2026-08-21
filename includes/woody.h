@@ -36,6 +36,7 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
+	size_t index;
 	/*	The text part offset relative to byte 0 of the file on disk
 	It holds the value of `p_offset` */
 	Elf64_Off txt_offset;
@@ -48,7 +49,9 @@ typedef struct xphdr
 
 	/* The size of the text section of the program header.
 	It holds the value of `p_filesz` */
-	Elf64_Xword txt_size;
+	Elf64_Xword *txt_size;
+
+	Elf64_Xword *mem_size;
 
 	/* Raw .text values for encryption */
 	unsigned char *txt_data;
@@ -68,11 +71,14 @@ Using the typedefs protects us from byte lenght mismatches on different architec
 */
 typedef struct bin_ctx
 {
-	/* Original entrypoint of the given binary.
+	/* A pointer our self-allocated filemap, stored to dump into woody */
+	unsigned char *updated_file_map;
+	/* Pointer to e_entry. We update it with the vadr of the stub appended to the executable PT_LOAD
 	We will use it at the end of the stub to launch the regular execution.
 	Holds `e_entry`*/
+	Elf64_Addr *program_entrypoint;
+	/* A backup of the original entrypoint; we store it in order to jump back to the original program execution once the stub has run*/
 	Elf64_Addr original_entrypoint;
-
 	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
 
@@ -87,19 +93,20 @@ void _plog(const char *mess);
 void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
+void hexdump(const s_xphdr *xphdr);
 
 // parsing
 bool is_valid_magic(const unsigned char *ident);
 bool is_valid_format(const int ei_class);
 bool is_valid_machine(const int e_machine);
-bool validate_format(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
 
 // header recovery
-bool get_xphdr(const Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
+bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 
 // header modification
-bool realloc_headers(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx);
+bool insert_stub(void *file_map, s_bin_ctx *ctx);
 
 // cipher
-unsigned char* encrypt_text(unsigned char*  key, unsigned char* text, int text_size);
-bool create_cipher_key(unsigned char*  key);
+unsigned char *encrypt_text(unsigned char *key, unsigned char *text, int text_size);
+bool create_cipher_key(unsigned char *key);

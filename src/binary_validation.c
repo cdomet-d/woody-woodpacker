@@ -48,7 +48,7 @@ bool is_valid_machine(const int e_machine)
 	return e_machine == EM_X86_64 ? true : false;
 }
 
-bool validate_format(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 {
 	if (!is_valid_magic(ehdr->e_ident))
 		return _perror("File format not supported");
@@ -56,10 +56,11 @@ bool validate_format(const Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_i
 		return _perror("File architecture not supported");
 	if (!is_valid_machine(ehdr->e_machine))
 		return _perror("Machine architecture not supported");
+	ctx->program_entrypoint = &(ehdr->e_entry);
 	ctx->original_entrypoint = ehdr->e_entry;
 	phdr_info->phdr_count = ehdr->e_phnum;
 	phdr_info->phdr_offset = ehdr->e_phoff;
-	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident), \
-		ctx->original_entrypoint, phdr_info);
+	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident),
+			   ctx->original_entrypoint, phdr_info);
 	return true;
 }
