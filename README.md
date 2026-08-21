@@ -29,9 +29,10 @@ This project is about coding a simple packer
 - [X] Unpack binary into memory using nmap
 - [X] Parse Elf Headers to recover Program Headers and executable segment
 - [X] Yoink `.text` and check integrity
-- [ ] Write simple stub in ASM and get its size
-- [ ] Allocate (nmap result + stub_size) so we can start creating `woody`
-- [ ] In that allocated buffer, insert the stub inplace of PT_LOAD with X
+- [X] Write simple stub in ASM and get its size
+- [X] Allocate (nmap result + stub_size) so we can start creating `woody` =>
+  - Or just nmap_result_size if the code cave is big enough
+- [X] In that allocated buffer, insert the stub inplace of PT_LOAD with X
 - [ ] Update and pad memory map + update entrypoint
 
 ## Reading

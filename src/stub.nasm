@@ -5,7 +5,7 @@ BITS 64
 _stub_start:
     mov rax, 1 
     mov rdi, 1 
-    lea rsi, [rel msg] ; "loads" the adress of the label "msg" declared later
+    lea rsi, [rel msg]
     mov rdx, msg_len
     syscall
 
@@ -91,7 +91,12 @@ _run_text:
     mov rbx, 0
     mov r12, 0
     mov r13, 0
+    lea rbx, [rel _stub_start]
+    mov rcx, [rel stub_vaddr]
+    sub rbx, rcx
     mov rax, [rel o_entry] 
+    add rax, rbx
+    xor rdx, rdx 
     jmp rax
 
 [section .data]
@@ -99,9 +104,10 @@ _run_text:
     text_size: dq 0
     key: times 16 db 0x00
     key_len: equ 16
-    msg: dq "....WOODY....", 10
+    msg: db "....WOODY....", 10
     msg_len: equ $ - msg 
-    o_entry: db 0
+    o_entry: dq 0
+    stub_vaddr: dq 0
 
 [section .bss]
     S: resb 256
