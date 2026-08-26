@@ -10,26 +10,29 @@ _stub_start:
     syscall
     xor rdx, rdx
 
-
 _get_offset:
     lea r14, [rel _stub_start]
     mov rcx, [rel stub_vaddr]
     sub r14, rcx
     test r14, r14
-    jns _decrypt_text
+    jns _mprotect
     neg r14
 
 _mprotect:
-    mov r15, [rel text_size]     ; text_size
     mov rax, [rel o_entry]
     add rax, r14
-    and rax, ~0xFFF        
     mov rdi, rax 
+    and rdi, ~0xFFF        
 
-    mov rsi, r15
+    sub rax, rdi
+    mov rsi, rax
+
+    mov r15, [rel text_size]     ; text_size
+    add rsi, r15
     add rsi, stub_size + 256
     add rsi, 4095
     and rsi, -4096
+
     mov rdx, 7  
     mov rax, 10  
     syscall
