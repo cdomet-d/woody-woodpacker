@@ -36,6 +36,7 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 	if (ephdr_count > 1)
 		return _perror("Found more than one executable header. Aborting...");
 
+	phdr[xphdr_index].p_flags = 7;
 	ctx->xphdr.txt_offset = phdr[xphdr_index].p_offset;
 	ctx->xphdr.txt_size = &(phdr[xphdr_index]).p_filesz;
 	ctx->xphdr.mem_size = &(phdr[xphdr_index]).p_memsz;
