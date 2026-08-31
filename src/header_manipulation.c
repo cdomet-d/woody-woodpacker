@@ -1,7 +1,7 @@
-#define KEY_OFF 0x17b
-#define OENTRY_OFF 0x199
 #define STUB_VADDR_OFF 0x1a1
 #define TEXT_OFF 0x16b
+#define OENTRY_OFF 0x199
+#define KEY_OFF 0x17b
 #define TEXTSZ_OFF 0x173
 
 #include "woody.h"

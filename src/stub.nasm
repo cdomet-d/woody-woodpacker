@@ -1,5 +1,4 @@
 BITS 64
-;[section .text]
     global _stub_start
 
 _stub_start:
