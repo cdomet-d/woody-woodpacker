@@ -26,7 +26,7 @@ _mprotect:
     sub rax, rdi
     mov rsi, rax
 
-    mov r15, [rel text_size]     ; text_size
+    mov r15, [rel text_size]     
     add rsi, r15
     add rsi, stub_size + 256
     add rsi, 4095
@@ -43,26 +43,26 @@ _decrypt_text:
 _init_S:
     cmp rdi, 256
     je _ksa
-    mov byte [rbx + rdi], dil   ; S[i] = i
+    mov byte [rbx + rdi], dil   
     inc rdi
     jmp _init_S
 
 _ksa:
-    mov rdi, 0          ; int i
-    mov rsi, 0          ; int j
-    lea r12, [rel key]  ; key
+    mov rdi, 0
+    mov rsi, 0
+    lea r12, [rel key]  
 
 _loop_ksa:
     cmp rdi, 256
     je _prga
 
     mov rax, rdi
-    and rax, key_len - 1 ; % 16     ; i % 16
-    movzx rax, byte [r12 + rax]     ; key[i % 16]
-    add rsi, rax                    ; j + key[i % 16]
-    movzx rax, byte [rbx + rdi]     ; S[i]
-    add rsi, rax                    ; j + S[i]
-    and rsi, 0xFF ; % 256           ; j % 256
+    and rax, key_len - 1 
+    movzx rax, byte [r12 + rax]     
+    add rsi, rax  
+    movzx rax, byte [rbx + rdi]     
+    add rsi, rax  
+    and rsi, 0xFF 
 
     call _swap_values
     
@@ -70,32 +70,32 @@ _loop_ksa:
     jmp _loop_ksa
 
 _prga:
-    mov rdi, 0                  ; int i
-    mov rsi, 0                  ; int j
-    mov rdx, 0                  ; int idx
+    mov rdi, 0
+    mov rsi, 0
+    mov rdx, 0
     lea rax, [rel text]
-    mov r13, [rax]              ; text
+    mov r13, [rax]    
     add r13, r14
 
 _loop_prga:
     cmp rdx, r15
     je _run_text
-    add rdi, 1                      ; i + 1
-    and rdi, 0xFF                   ; i % 256
-    movzx r8, byte [rbx + rdi]      ; S[i]
-    add rsi, r8                     ; j + S[i]
-    and rsi, 0xFF                   ; j % 256
+    add rdi, 1    
+    and rdi, 0xFF 
+    movzx r8, byte [rbx + rdi]      
+    add rsi, r8   
+    and rsi, 0xFF 
 
     call _swap_values
 
     mov rax, 0
-    movzx r8, byte [rbx + rdi]      ; S[i]
-    add rax, r8                     ; t + S[i]
-    movzx r8, byte [rbx + rsi]      ; S[j]
-    add rax, r8                     ; t + S[j]
-    and rax, 0xFF                   ; t % 256
-    movzx rax, byte [rbx + rax]     ; S[t]
-    xor byte [r13 + rdx], al        ; text[idx] XOR S[t]
+    movzx r8, byte [rbx + rdi]      
+    add rax, r8   
+    movzx r8, byte [rbx + rsi]      
+    add rax, r8   
+    and rax, 0xFF 
+    movzx rax, byte [rbx + rax]     
+    xor byte [r13 + rdx], al        
 
     inc rdx
     jmp _loop_prga
@@ -116,8 +116,6 @@ _run_text:
     xor rdx, rdx 
     jmp rax
 
-_stub_end:
-
 text: dq 0
 text_size: dq 0
 key: times 16 db 0x00
@@ -128,3 +126,5 @@ o_entry: dq 0
 stub_vaddr: dq 0
 S: times 256 db 0x00
 stub_size: equ _stub_end - _stub_start
+
+_stub_end:
