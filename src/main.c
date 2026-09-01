@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 		close(bin_fd);
 		return 1;
 	}
-	encrypt_text(ctx.key, ctx.xphdr.txt_data, *(ctx.xphdr.txt_size));
+	encrypt_text(ctx.key, ctx.xphdr.txt_data, ctx.xphdr.txt_size_val);
 	if (!insert_stub(file_map, &ctx))
 		return 1;
 	create_woody_file(file_map, len);

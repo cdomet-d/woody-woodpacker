@@ -44,7 +44,9 @@ clean:
 
 fclean: clean
 	make -C $(LIB) $@
+	$(RM) ./utils/logs
 	$(RM) $(NAME)
+	$(RM) woody
 	
 re: fclean all
 

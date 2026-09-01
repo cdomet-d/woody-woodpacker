@@ -31,7 +31,7 @@ void init_array_S(unsigned char* S) {
 /*
 	swap_S_values swaps two values of a given array
 */
-void swap_S_values(unsigned char*  S, int i, int j) {
+void swap_S_values(unsigned char*  S, Elf64_Xword i, Elf64_Xword j) {
 	char tmp = S[i];
 
 	S[i] = S[j];
@@ -56,12 +56,12 @@ void ksa(unsigned char* S, unsigned char* key) {
 /*
 	Pseudo-random generation algorithm
 */
-void prga(unsigned char*  S, unsigned char* text, int text_size) {
+void prga(unsigned char*  S, unsigned char* text, Elf64_Xword text_size) {
 	int i = 0;
 	int j = 0;
 	int t = 0;
 
-	for (int idx = 0; idx < text_size; idx++) {
+	for (Elf64_Xword idx = 0; idx < text_size; idx++) {
 		i = (i + 1) % 256;
 		j = (j + S[i]) % 256;
 		swap_S_values(S, i, j);
@@ -70,8 +70,7 @@ void prga(unsigned char*  S, unsigned char* text, int text_size) {
 	}
 }
 
-void encrypt_text(unsigned char* key, unsigned char* text, int text_size) {
-	//TODO: change int to elfuint64
+void encrypt_text(unsigned char* key, unsigned char* text, Elf64_Xword text_size) {
 	unsigned char  S[256];
 
 	ft_bzero(S, 256);
@@ -87,5 +86,5 @@ STEPS TO ENCRYPT USING RC4:
 - combine keystream with .text using XOR to get ciphertext
 
 encrypt | decrypt :
-Plaintext + Keystream -> XOR -> Ciphertext | Ciphertext + Keystream -> XOR -> Plaintext
+PlaElf64_Xwordext + Keystream -> XOR -> Ciphertext | Ciphertext + Keystream -> XOR -> PlaElf64_Xwordext
 */

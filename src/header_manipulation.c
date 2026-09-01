@@ -37,19 +37,20 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 		return _perror("Found more than one executable header. Aborting...");
 
 	phdr[xphdr_index].p_flags = 7;
+
 	ctx->xphdr.txt_offset = phdr[xphdr_index].p_offset;
-	ctx->xphdr.txt_size = &(phdr[xphdr_index]).p_filesz;
-	ctx->xphdr.mem_size = &(phdr[xphdr_index]).p_memsz;
+	ctx->xphdr.txt_size_addr = &(phdr[xphdr_index]).p_filesz;
+	ctx->xphdr.mem_size_addr = &(phdr[xphdr_index]).p_memsz;
+	ctx->xphdr.txt_size_val = phdr[xphdr_index].p_filesz;
+	ctx->xphdr.mem_size_val = phdr[xphdr_index].p_memsz;
 	ctx->xphdr.txt_vaddress = phdr[xphdr_index].p_vaddr;
-	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size);
-	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.txt_size));
-	print_struct(&(ctx->xphdr));
+	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + ctx->xphdr.txt_size_val;
+	ctx->xphdr.cave_lenght = compute_cave_lenght(ctx->xphdr.txt_size_val);
 	return true;
 }
 
 bool insert_stub(void *file_map, s_bin_ctx *ctx)
 {
-	(void)file_map;
 	extern unsigned char _binary_stub_bin_start[];
 	extern unsigned char _binary_stub_bin_end[];
 
@@ -69,15 +70,15 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	
 	*o_entry = ctx->original_entrypoint;
 
-	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size);
+	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + ctx->xphdr.txt_size_val;
 	*stub_vaddr = *(ctx->program_entrypoint);
 
 	ft_memcpy(key, ctx->key, 16);
 	*text = ctx->xphdr.txt_vaddress;
-	*text_size = *(ctx->xphdr.txt_size);
+	*text_size = ctx->xphdr.txt_size_val;
 
-	*(ctx->xphdr.txt_size) += stub_len;
-	*(ctx->xphdr.mem_size) += stub_len;
+	*(ctx->xphdr.txt_size_addr) = ctx->xphdr.txt_size_val + stub_len;
+	*(ctx->xphdr.mem_size_addr) = ctx->xphdr.mem_size_val + stub_len;
 
 	return true;
 }

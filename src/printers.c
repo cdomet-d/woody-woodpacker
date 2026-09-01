@@ -64,7 +64,7 @@ static bool size_reached_before_line_end(Elf64_Xword index, Elf64_Xword size) { 
 void print_xphdr(const s_xphdr *xphdr)
 {
 	char ascii[17] = {0};
-	Elf64_Word tsz = *(xphdr->txt_size);
+	Elf64_Word tsz = xphdr->txt_size_val;
 
 	printf("\n%s--- Printing executable text segment of size %u at offset %ld ---%s\n",
 		   INFO, tsz, xphdr->txt_offset, RESET);
@@ -103,8 +103,14 @@ void hexdump(const s_xphdr *xphdr)
 
 void print_struct(const s_xphdr *hdr)
 {
-	printf("Text Offset: %lu\nText Vadress:	0x%lx\nText Size:	%lu\nMemSize:	%lu\n\
-Cave Offset	%lu\nCave Lenght:	%lu\n",
+	printf("Txt Offset: %lu\n\
+Txt Vadress:	0x%lx\n\
+Txt Size:	%lu	TxtSize Address		%p\n\
+MemSize:	%lu	MemSize Address		%p\n\
+Cave Offset	%lu\n\
+Cave Lenght:	%lu\n",
 		   hdr->txt_offset, hdr->txt_vaddress,
-		   *(hdr->txt_size), *(hdr->mem_size), hdr->cave_offset, hdr->cave_lenght);
+		   hdr->txt_size_val, hdr->txt_size_addr,
+		   hdr->mem_size_val, hdr->mem_size_addr,
+		   hdr->cave_offset, hdr->cave_lenght);
 }

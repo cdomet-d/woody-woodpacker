@@ -31,6 +31,7 @@ typedef struct phdr_info
 	We need it to loop through them and find the executable PT_LOAD.
 	Holds `e_phnum` */
 	Elf64_Half phdr_count;
+	Elf64_Half phdr_size;
 
 } s_pdhr_info;
 
@@ -48,9 +49,11 @@ typedef struct xphdr
 
 	/* The size of the text section of the program header.
 	It holds the value of `p_filesz` */
-	Elf64_Xword *txt_size;
+	Elf64_Xword *txt_size_addr;
+	Elf64_Xword *mem_size_addr;
 
-	Elf64_Xword *mem_size;
+	Elf64_Xword txt_size_val;
+	Elf64_Xword mem_size_val;
 
 	/* Raw .text values for encryption */
 	unsigned char *txt_data;
@@ -70,8 +73,6 @@ Using the typedefs protects us from byte lenght mismatches on different architec
 */
 typedef struct bin_ctx
 {
-	/* A pointer our self-allocated filemap, stored to dump into woody */
-	unsigned char *updated_file_map;
 	/* Pointer to e_entry. We update it with the vadr of the stub appended to the executable PT_LOAD
 	We will use it at the end of the stub to launch the regular execution.
 	Holds `e_entry`*/
@@ -110,5 +111,5 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
 bool insert_stub(void *file_map, s_bin_ctx *ctx);
 
 // cipher
-void encrypt_text(unsigned char *key, unsigned char *text, int text_size);
+void encrypt_text(unsigned char *key, unsigned char *text, Elf64_Xword text_size);
 bool create_cipher_key(unsigned char *key);

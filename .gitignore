@@ -1,5 +1,6 @@
 .dir_build
-woody*
+utils/logs/*
 libft/libft.a
 libft/.lib_build
+woody*
 out

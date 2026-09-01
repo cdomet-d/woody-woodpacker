@@ -60,5 +60,6 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 	ctx->original_entrypoint = ehdr->e_entry;
 	phdr_info->phdr_count = ehdr->e_phnum;
 	phdr_info->phdr_offset = ehdr->e_phoff;
+	phdr_info->phdr_size = ehdr->e_phentsize;
 	return true;
 }
