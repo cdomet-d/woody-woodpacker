@@ -36,7 +36,6 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
-	size_t index;
 	/*	The text part offset relative to byte 0 of the file on disk
 	It holds the value of `p_offset` */
 	Elf64_Off txt_offset;
@@ -95,6 +94,7 @@ void _plog(const char *mess);
 void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
+void print_struct(const s_xphdr *hdr);
 void hexdump(const s_xphdr *xphdr);
 
 // parsing

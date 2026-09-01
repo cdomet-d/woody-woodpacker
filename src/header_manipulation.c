@@ -43,11 +43,13 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 	ctx->xphdr.txt_vaddress = phdr[xphdr_index].p_vaddr;
 	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size);
 	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.txt_size));
+	print_struct(&(ctx->xphdr));
 	return true;
 }
 
 bool insert_stub(void *file_map, s_bin_ctx *ctx)
 {
+	(void)file_map;
 	extern unsigned char _binary_stub_bin_start[];
 	extern unsigned char _binary_stub_bin_end[];
 
@@ -59,9 +61,7 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	
 	if (stub_len > ctx->xphdr.cave_lenght)
 		return _perror("Code cave is too short for stub");
-	
-	// print_xphdr(&(ctx->xphdr));
-	
+		
 	ft_memcpy(file_map + ctx->xphdr.cave_offset, _binary_stub_bin_start, stub_len);
 	
 	Elf64_Addr *o_entry = (Elf64_Addr *)(file_map + ctx->xphdr.cave_offset + OENTRY_OFF);
@@ -69,8 +69,6 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	
 	*o_entry = ctx->original_entrypoint;
 
-	printf("%ld\n", *(ctx->xphdr.txt_size));
-	
 	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size);
 	*stub_vaddr = *(ctx->program_entrypoint);
 

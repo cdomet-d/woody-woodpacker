@@ -100,3 +100,11 @@ void hexdump(const s_xphdr *xphdr)
 		printf("x%02x ", xphdr->txt_data[i]);
 	}
 }
+
+void print_struct(const s_xphdr *hdr)
+{
+	printf("Text Offset: %lu\nText Vadress:	0x%lx\nText Size:	%lu\nMemSize:	%lu\n\
+Cave Offset	%lu\nCave Lenght:	%lu\n",
+		   hdr->txt_offset, hdr->txt_vaddress,
+		   *(hdr->txt_size), *(hdr->mem_size), hdr->cave_offset, hdr->cave_lenght);
+}
