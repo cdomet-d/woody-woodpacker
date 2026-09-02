@@ -42,18 +42,18 @@ int main(int argc, char *argv[])
 		return 1;
 	if (!find_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
 		return 1;
-
-	ctx.xphdr.txt_data = (unsigned char *)(file_map + ctx.xphdr.txt_offset);
-
-	if (!create_cipher_key(ctx.key)) {
+	if (!create_cipher_key(ctx.key))
+	{
 		close(bin_fd);
 		return 1;
 	}
+	print_struct(&(ctx.xphdr));
+	ctx.xphdr.txt_data = (unsigned char *)file_map + ctx.xphdr.txt_offset;
 	encrypt_text(ctx.key, ctx.xphdr.txt_data, ctx.xphdr.txt_size_val);
 	if (!insert_stub(file_map, &ctx))
 		return 1;
+	print_struct(&(ctx.xphdr));
 	create_woody_file(file_map, len);
-
 	close(bin_fd);
 	return 0;
 }

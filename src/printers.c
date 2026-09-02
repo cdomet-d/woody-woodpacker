@@ -70,7 +70,9 @@ void print_xphdr(const s_xphdr *xphdr)
 		   INFO, tsz, xphdr->txt_offset, RESET);
 	printf("\n");
 
-	for (Elf64_Xword i = 0; i < xphdr->cave_lenght; i++)
+	size_t sz = (xphdr->cave_lenght + *(xphdr->txt_size_addr));
+	printf("Size: %ld\n", sz);
+	for (Elf64_Xword i = 0; i < sz; i++)
 	{
 		if (line_start(i))
 			printf("%p: ", (void *)(xphdr->txt_vaddress + i));
@@ -78,7 +80,7 @@ void print_xphdr(const s_xphdr *xphdr)
 		if (i % 2)
 			printf(" ");
 		ascii[i % 16] = xphdr->txt_data[i] >= ' ' && xphdr->txt_data[i] < 127 ? xphdr->txt_data[i] : '.';
-		if (size_reached_before_line_end(i, xphdr->cave_lenght))
+		if (size_reached_before_line_end(i,sz))
 			while (!line_end(i))
 			{
 				printf("   ");
@@ -105,12 +107,14 @@ void print_struct(const s_xphdr *hdr)
 {
 	printf("Txt Offset: %lu\n\
 Txt Vadress:	0x%lx\n\
+Txt Lenght:	%lu\n\
 Txt Size:	%lu	TxtSize Address		%p\n\
 MemSize:	%lu	MemSize Address		%p\n\
 Cave Offset	%lu\n\
 Cave Lenght:	%lu\n",
 		   hdr->txt_offset, hdr->txt_vaddress,
-		   hdr->txt_size_val, hdr->txt_size_addr,
-		   hdr->mem_size_val, hdr->mem_size_addr,
+		   hdr->txt_size_val,
+		   *(hdr->txt_size_addr), hdr->txt_size_addr,
+		   *(hdr->mem_size_addr), hdr->mem_size_addr,
 		   hdr->cave_offset, hdr->cave_lenght);
 }

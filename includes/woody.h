@@ -21,48 +21,24 @@
 */
 typedef struct phdr_info
 {
-	/*  The program header offset.
-	Starting from the beginning of the header (offset 0),
-	we need to jump `phdr_offset` bytes to find the program headers.
-	Holds `e_phoff` */
 	Elf64_Off phdr_offset;
-
-	/*The total number of program headers.
-	We need it to loop through them and find the executable PT_LOAD.
-	Holds `e_phnum` */
 	Elf64_Half phdr_count;
 	Elf64_Half phdr_size;
-
 } s_pdhr_info;
 
 typedef struct xphdr
 {
-	/*	The text part offset relative to byte 0 of the file on disk
-	It holds the value of `p_offset` */
 	Elf64_Off txt_offset;
-
-	/* The virtual adress of the text section. When the program is loaded,
-	the kernel will place the text starting at that adress. It can be fixed (with non-PIE executable)
-	or must be calculated with an offset if the binary is PIE
-	It holds the value of `p_vaddr` */
 	Elf64_Addr txt_vaddress;
 
-	/* The size of the text section of the program header.
-	It holds the value of `p_filesz` */
 	Elf64_Xword *txt_size_addr;
 	Elf64_Xword *mem_size_addr;
 
 	Elf64_Xword txt_size_val;
-	Elf64_Xword mem_size_val;
 
-	/* Raw .text values for encryption */
 	unsigned char *txt_data;
 
-	/* The offset needed to reach the start of the code cave.
-	It's equal to txt_offset + txt_size*/
 	Elf64_Off cave_offset;
-
-	/* The size of the code cave */
 	size_t cave_lenght;
 } s_xphdr;
 

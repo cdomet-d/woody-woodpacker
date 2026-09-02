@@ -13,20 +13,30 @@ static size_t compute_cave_lenght(Elf64_Xword txt_size)
 	return aligned - txt_size;
 }
 
+static void set_encryption_data(s_bin_ctx *ctx, 
+	Elf64_Phdr phdr, const s_pdhr_info *info)
+{
+	printf("Original segment offset at: %ld\n", phdr.p_offset);
+	Elf64_Off headers_off = info->phdr_offset + (info->phdr_size * info->phdr_count);
+	ctx->xphdr.txt_offset = phdr.p_offset == 0 ? headers_off : phdr.p_offset;
+	ctx->xphdr.txt_size_val = phdr.p_offset == 0 ?
+		phdr.p_filesz - headers_off : phdr.p_filesz;
+}
+
 /* Finds and stores the executable PT_LOAD segment of the binary, which contains the .text section
 Return : `true` if ephdr == 1, `false` otherwise
 */
-bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
+bool find_xphdr(Elf64_Phdr *filemap, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 {
 	int ephdr_count = 0;
-	int xphdr_index = 0;
+	int xphdr_i = 0;
 
 	for (int i = 0; i < phdr_info->phdr_count; i++)
 	{
-		if (phdr[i].p_flags & PF_X && phdr[i].p_type == PT_LOAD)
+		if (filemap[i].p_flags & PF_X && filemap[i].p_type == PT_LOAD)
 		{
 			if (ephdr_count == 0)
-				xphdr_index = i;
+				xphdr_i = i;
 			ephdr_count++;
 		}
 	}
@@ -36,18 +46,18 @@ bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 	if (ephdr_count > 1)
 		return _perror("Found more than one executable header. Aborting...");
 
-	phdr[xphdr_index].p_flags = 7;
+	filemap[xphdr_i].p_flags = 7;
 
-	ctx->xphdr.txt_offset = phdr[xphdr_index].p_offset;
-	ctx->xphdr.txt_size_addr = &(phdr[xphdr_index]).p_filesz;
-	ctx->xphdr.mem_size_addr = &(phdr[xphdr_index]).p_memsz;
-	ctx->xphdr.txt_size_val = phdr[xphdr_index].p_filesz;
-	ctx->xphdr.mem_size_val = phdr[xphdr_index].p_memsz;
-	ctx->xphdr.txt_vaddress = phdr[xphdr_index].p_vaddr;
-	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + ctx->xphdr.txt_size_val;
-	ctx->xphdr.cave_lenght = compute_cave_lenght(ctx->xphdr.txt_size_val);
+	set_encryption_data(ctx, filemap[xphdr_i], phdr_info);
+	ctx->xphdr.txt_size_addr = &(filemap[xphdr_i]).p_filesz;
+	ctx->xphdr.mem_size_addr = &(filemap[xphdr_i]).p_memsz;
+	ctx->xphdr.txt_vaddress = filemap[xphdr_i].p_vaddr;
+	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size_addr);
+	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.txt_size_addr));
+	printf("Executable program offset starts at %ld\n", ctx->xphdr.txt_offset);
 	return true;
 }
+
 
 bool insert_stub(void *file_map, s_bin_ctx *ctx)
 {
@@ -77,8 +87,8 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	*text = ctx->xphdr.txt_vaddress;
 	*text_size = ctx->xphdr.txt_size_val;
 
-	*(ctx->xphdr.txt_size_addr) = ctx->xphdr.txt_size_val + stub_len;
-	*(ctx->xphdr.mem_size_addr) = ctx->xphdr.mem_size_val + stub_len;
+	*(ctx->xphdr.txt_size_addr) += stub_len;
+	*(ctx->xphdr.mem_size_addr) += stub_len;
 
 	return true;
 }

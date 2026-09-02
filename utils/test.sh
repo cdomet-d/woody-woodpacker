@@ -13,15 +13,15 @@ while IFS= read -r line;do
 	printf "%-50s" "$line"
     if  ./woody_woodpacker "$line" > ./utils/logs/create_error.log 2>&1; then
         echo  -n "[CREATION] SUCCESS"
-        timeout 1 bash -c 'exec -a "$0" ./woody "$1"' "TEST_FOR_$(basename "$line")" "--help"< /dev/null > woody-out 2>&1
-        echo "....WOODY...." > command-out  2>&1
-        timeout 1 bash -c 'exec -a "$0" "$1" "$2"' "TEST_FOR_$(basename "$line")" "$line" "--help"< /dev/null >> command-out 2>&1
-        if  diff woody-out command-out > /dev/null 2>&1 ; then
+        timeout 1 bash -c 'exec -a "$0" ./woody "$1"' "TEST_FOR_$(basename "$line")" "--help"< /dev/null > utils/woody-out 2>&1
+        echo "....WOODY...." > utils/command-out  2>&1
+        timeout 1 bash -c 'exec -a "$0" "$1" "$2"' "TEST_FOR_$(basename "$line")" "$line" "--help"< /dev/null >> utils/command-out 2>&1
+        if  diff utils/woody-out utils/command-out > /dev/null 2>&1 ; then
 	        echo "	[EXECUTION] SUCCESS"
             success+=1
         else
 	        echo "	[EXECUTION] FAILURE"
-			diff woody-out command-out > ./utils/logs/exec_fail_"$(basename "$line")".log
+			diff utils/woody-out utils/command-out > ./utils/logs/exec_fail_"$(basename "$line")".log
             failures+=1
 			exec_fail+=1
         fi
@@ -32,7 +32,8 @@ while IFS= read -r line;do
     fi
 done < ./utils/test-64-bits.txt
 
-rm woody-out command-out
+rm utils/woody-out utils/command-out
+rm -rf utils/logs
 
 echo
 echo "Ran $total tests"

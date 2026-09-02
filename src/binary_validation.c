@@ -2,35 +2,35 @@
 #include <stdbool.h>
 #include "libft.h"
 
-// static const char *get_file_type(Elf64_Half type)
-// {
-// 	switch (type)
-// 	{
-// 	case 1:
-// 		return "REL (Relocatable file)";
-// 	case 2:
-// 		return "EXEC (Executable file)";
-// 	case 3:
-// 		return "DYN (Position-Independent Executable file)";
-// 	case 4:
-// 		return "CORE (Core Dump)";
-// 	default:
-// 		return "unindentifiable";
-// 	}
-// }
+static const char *get_file_type(Elf64_Half type)
+{
+	switch (type)
+	{
+	case 1:
+		return "REL (Relocatable file)";
+	case 2:
+		return "EXEC (Executable file)";
+	case 3:
+		return "DYN (Position-Independent Executable file)";
+	case 4:
+		return "CORE (Core Dump)";
+	default:
+		return "unindentifiable";
+	}
+}
 
-// static const char *get_file_class(const unsigned char ident[EI_NIDENT])
-// {
-// 	switch (ident[EI_CLASS])
-// 	{
-// 	case 1:
-// 		return "32-bit";
-// 	case 2:
-// 		return "64-bit";
-// 	default:
-// 		return "invalid";
-// 	}
-// }
+static const char *get_file_class(const unsigned char ident[EI_NIDENT])
+{
+	switch (ident[EI_CLASS])
+	{
+	case 1:
+		return "32-bit";
+	case 2:
+		return "64-bit";
+	default:
+		return "invalid";
+	}
+}
 
 bool is_valid_magic(const unsigned char *ident)
 {
@@ -61,5 +61,6 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 	phdr_info->phdr_count = ehdr->e_phnum;
 	phdr_info->phdr_offset = ehdr->e_phoff;
 	phdr_info->phdr_size = ehdr->e_phentsize;
+	print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident), ehdr->e_entry, phdr_info);
 	return true;
 }
