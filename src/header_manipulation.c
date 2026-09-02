@@ -13,14 +13,24 @@ static size_t compute_cave_lenght(Elf64_Xword txt_size)
 	return aligned - txt_size;
 }
 
-static void set_encryption_data(s_bin_ctx *ctx, 
-	Elf64_Phdr phdr, const s_pdhr_info *info)
+static void set_encryption_data(s_bin_ctx *ctx,
+								Elf64_Phdr phdr, const s_pdhr_info *info)
 {
 	printf("Original segment offset at: %ld\n", phdr.p_offset);
-	Elf64_Off headers_off = info->phdr_offset + (info->phdr_size * info->phdr_count);
-	ctx->xphdr.txt_offset = phdr.p_offset == 0 ? headers_off : phdr.p_offset;
-	ctx->xphdr.txt_size_val = phdr.p_offset == 0 ?
-		phdr.p_filesz - headers_off : phdr.p_filesz;
+
+	if (phdr.p_offset == 0)
+	{
+		Elf64_Off headers_off = info->phdr_offset + (info->phdr_size * info->phdr_count);
+		ctx->xphdr.txt_vaddress = phdr.p_vaddr + headers_off;
+		ctx->xphdr.txt_size_val = phdr.p_filesz - headers_off;
+		ctx->xphdr.txt_offset = headers_off;
+	}
+	else
+	{
+		ctx->xphdr.txt_vaddress = phdr.p_vaddr;
+		ctx->xphdr.txt_offset = phdr.p_offset;
+		ctx->xphdr.txt_size_val = phdr.p_filesz;
+	}
 }
 
 /* Finds and stores the executable PT_LOAD segment of the binary, which contains the .text section
@@ -51,13 +61,12 @@ bool find_xphdr(Elf64_Phdr *filemap, const s_pdhr_info *phdr_info, s_bin_ctx *ct
 	set_encryption_data(ctx, filemap[xphdr_i], phdr_info);
 	ctx->xphdr.txt_size_addr = &(filemap[xphdr_i]).p_filesz;
 	ctx->xphdr.mem_size_addr = &(filemap[xphdr_i]).p_memsz;
-	ctx->xphdr.txt_vaddress = filemap[xphdr_i].p_vaddr;
 	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size_addr);
 	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.txt_size_addr));
+	ctx->xphdr.next_header = filemap[xphdr_i + 1].p_offset;
 	printf("Executable program offset starts at %ld\n", ctx->xphdr.txt_offset);
 	return true;
 }
-
 
 bool insert_stub(void *file_map, s_bin_ctx *ctx)
 {
@@ -68,19 +77,21 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 	Elf64_Addr *text = (Elf64_Addr *)(file_map + ctx->xphdr.cave_offset + TEXT_OFF);
 	Elf64_Xword *text_size = (Elf64_Xword *)(file_map + ctx->xphdr.cave_offset + TEXTSZ_OFF);
 	unsigned char *key = (unsigned char *)(file_map + ctx->xphdr.cave_offset + KEY_OFF);
-	
-	
+
 	if (stub_len > ctx->xphdr.cave_lenght)
 		return _perror("Code cave is too short for stub");
-		
+	if (file_map + ctx->xphdr.next_header < file_map + ctx->xphdr.cave_offset + ctx->xphdr.cave_lenght)
+		return _perror("Code cave is unsafe");	
+
+	printf("Cave end is %s next header\n", file_map + ctx->xphdr.next_header < file_map + ctx->xphdr.cave_offset + ctx->xphdr.cave_lenght ? "within" : "not within");
 	ft_memcpy(file_map + ctx->xphdr.cave_offset, _binary_stub_bin_start, stub_len);
-	
+
 	Elf64_Addr *o_entry = (Elf64_Addr *)(file_map + ctx->xphdr.cave_offset + OENTRY_OFF);
 	Elf64_Addr *stub_vaddr = (Elf64_Addr *)(file_map + ctx->xphdr.cave_offset + STUB_VADDR_OFF);
-	
+
 	*o_entry = ctx->original_entrypoint;
 
-	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + ctx->xphdr.txt_size_val;
+	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size_addr);
 	*stub_vaddr = *(ctx->program_entrypoint);
 
 	ft_memcpy(key, ctx->key, 16);

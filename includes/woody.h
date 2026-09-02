@@ -28,6 +28,7 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
+	Elf64_Off next_header;
 	Elf64_Off txt_offset;
 	Elf64_Addr txt_vaddress;
 
