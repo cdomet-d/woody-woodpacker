@@ -28,19 +28,14 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
-	Elf64_Off next_header;
-	Elf64_Off txt_offset;
 	Elf64_Addr txt_vaddress;
-
-	Elf64_Xword *txt_size_addr;
-	Elf64_Xword *mem_size_addr;
-
-	Elf64_Xword txt_size_val;
-
-	unsigned char *txt_data;
-
 	Elf64_Off cave_offset;
-	size_t cave_lenght;
+	Elf64_Off txt_offset;
+	Elf64_Xword *mem_size_addr;
+	Elf64_Xword *txt_size_addr;
+	Elf64_Xword cave_lenght;
+	Elf64_Xword txt_size_val;
+	unsigned char *txt_data;
 } s_xphdr;
 
 /* a simple struct to store our binary informations across the project
@@ -75,7 +70,8 @@ void print_xphdr(const s_xphdr *xphdr);
 void print_struct(const s_xphdr *hdr);
 void hexdump(const s_xphdr *xphdr);
 
-// parsing
+// validation
+bool is_safe_offset(const s_bin_ctx *ctx);
 bool is_valid_magic(const unsigned char *ident);
 bool is_valid_format(const int ei_class);
 bool is_valid_machine(const int e_machine);

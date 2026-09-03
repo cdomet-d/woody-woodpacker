@@ -32,6 +32,18 @@ static const char *get_file_class(const unsigned char ident[EI_NIDENT])
 	}
 }
 
+bool is_safe_offset(const s_bin_ctx *ctx)
+{
+	if (ctx->xphdr.txt_offset > UINT64_MAX - *(ctx->xphdr.txt_size_addr))
+		return false;
+	if (ctx->xphdr.txt_vaddress > UINT64_MAX - *(ctx->xphdr.txt_size_addr))
+		return false;
+	if (ctx->xphdr.cave_offset > UINT64_MAX - ctx->xphdr.cave_lenght)
+		return false;
+	return true;
+}
+
+bool is_valid_memory()
 bool is_valid_magic(const unsigned char *ident)
 {
 	const unsigned char ELF_MAGIC[4] = {0x7F, 'E', 'L', 'F'};

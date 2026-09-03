@@ -25,15 +25,16 @@ while IFS= read -r line; do
 		else
 			echo "	[EXECUTION] FAILURE"
 			diff utils/woody-out utils/command-out >./utils/logs/exec_fail_"$(basename "$line")".log
+			readelf -h "$line" > ./utils/logs/readelf_"$(basename "$line")".log
 			failures+=1
 			exec_fail+=1
 		fi
 	else
-		echo "[CREATION] SUCCESS"
+		echo "[CREATION] FAILURE"
 		failures+=1
 		creat_fail+=1
 	fi
-done <./utils/home.txt
+done <./utils/test-home.txt
 
 rm utils/woody-out utils/command-out
 
