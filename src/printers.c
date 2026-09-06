@@ -64,23 +64,23 @@ static bool size_reached_before_line_end(Elf64_Xword index, Elf64_Xword size) { 
 void print_xphdr(const s_xphdr *xphdr)
 {
 	char ascii[17] = {0};
-	Elf64_Word tsz = xphdr->txt_size_val;
+	Elf64_Word tsz = xphdr->fsize_val;
 
 	printf("\n%s--- Printing executable text segment of size %u at offset %ld ---%s\n",
-		   INFO, tsz, xphdr->txt_offset, RESET);
+		   INFO, tsz, xphdr->hdr_offset, RESET);
 	printf("\n");
 
-	size_t sz = (xphdr->cave_lenght + *(xphdr->txt_size_addr));
+	size_t sz = (xphdr->cave_lenght + *(xphdr->fsizse_addr));
 	printf("Size: %ld\n", sz);
 	for (Elf64_Xword i = 0; i < sz; i++)
 	{
 		if (line_start(i))
-			printf("%p: ", (void *)(xphdr->txt_vaddress + i));
-		printf("%02x", xphdr->txt_data[i]);
+			printf("%p: ", (void *)(xphdr->v_addr + i));
+		printf("%02x", xphdr->encrypted_data[i]);
 		if (i % 2)
 			printf(" ");
-		ascii[i % 16] = xphdr->txt_data[i] >= ' ' && xphdr->txt_data[i] < 127 ? xphdr->txt_data[i] : '.';
-		if (size_reached_before_line_end(i,sz))
+		ascii[i % 16] = xphdr->encrypted_data[i] >= ' ' && xphdr->encrypted_data[i] < 127 ? xphdr->encrypted_data[i] : '.';
+		if (size_reached_before_line_end(i, sz))
 			while (!line_end(i))
 			{
 				printf("   ");
@@ -99,7 +99,7 @@ void hexdump(const s_xphdr *xphdr)
 {
 	for (Elf64_Xword i = 0; i < xphdr->cave_lenght; i++)
 	{
-		printf("x%02x ", xphdr->txt_data[i]);
+		printf("x%02x ", xphdr->encrypted_data[i]);
 	}
 }
 
@@ -112,9 +112,9 @@ Txt Size:	%lu	TxtSize Address		%p\n\
 MemSize:	%lu	MemSize Address		%p\n\
 Cave Offset	%lu\n\
 Cave Lenght:	%lu\n",
-		   hdr->txt_offset, hdr->txt_vaddress,
-		   hdr->txt_size_val,
-		   *(hdr->txt_size_addr), hdr->txt_size_addr,
+		   hdr->hdr_offset, hdr->v_addr,
+		   hdr->fsize_val,
+		   *(hdr->fsizse_addr), hdr->fsizse_addr,
 		   *(hdr->mem_size_addr), hdr->mem_size_addr,
 		   hdr->cave_offset, hdr->cave_lenght);
 }

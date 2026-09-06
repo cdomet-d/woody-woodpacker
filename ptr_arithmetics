@@ -1,0 +1,22 @@
+.init range from 	847872 to 847899
+.plt range from 	847904 to 859632
+.plt.got range from 859632 to 859744
+.plt.sec range from 859744 to 871344
+.text range from 	871456 to 6995218
+.fini range from 	7007044 to 7007057
+
+7 716 625 | 0x75bf11
+
+crash site 						7 716 625
+
+runtime address of .init 				93 824 993 079 296
+runtime address of .plt 				93 824 993 079 328
+runtime address of .plt.got				93 824 993 091 056
+runtime address of .plt.sec 			93 824 993 091 168
+runtime address of .text				93 824 998 367 010 
+corrupted bytes that are being passed 	93 824 998 866 688
+runtime address of .text END			93 824 999 226 642
+runtime address of .fini				93 824 999 238 468
+
+runtime address of .interp 93824992232272
+

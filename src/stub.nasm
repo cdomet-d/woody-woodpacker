@@ -18,22 +18,20 @@ _get_offset:
     neg r14
 
 _mprotect:
-    mov rax, [rel o_entry]
+    lea rax, [rel text]
+	mov rax, [rax]
     add rax, r14
     mov rdi, rax 
-    and rdi, ~0xFFF        
-
+    and rdi, ~0xFFF
     sub rax, rdi
     mov rsi, rax
-
-    mov r15, [rel text_size]     
+    mov r15, [rel text_size]
     add rsi, r15
     add rsi, stub_size + 256
     add rsi, 4095
     and rsi, -4096
-
-    mov rdx, 7  
-    mov rax, 10  
+    mov rdx, 7
+    mov rax, 10
     syscall
 
 _decrypt_text:

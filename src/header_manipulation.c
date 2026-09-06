@@ -1,8 +1,8 @@
-#define STUB_VADDR_OFF 0x1a1
-#define TEXT_OFF 0x16b
-#define OENTRY_OFF 0x199
-#define KEY_OFF 0x17b
-#define TEXTSZ_OFF 0x173
+#define STUB_VADDR_OFF 0x1a4
+#define TEXT_OFF 0x16e
+#define OENTRY_OFF 0x19c
+#define KEY_OFF 0x17e
+#define TEXTSZ_OFF 0x176
 
 #include "woody.h"
 #include "libft.h"
@@ -15,7 +15,7 @@ static size_t compute_cave_lenght(Elf64_Xword txt_size)
 
 static bool is_safe_cave(size_t self, Elf64_Phdr *filemap, const s_pdhr_info *phdr_info, s_bin_ctx *ctx)
 {
-	Elf64_Off cave_seg_start = ctx->xphdr.txt_offset;
+	Elf64_Off cave_seg_start = ctx->xphdr.hdr_offset;
 	Elf64_Off cave_seg_end = ctx->xphdr.cave_offset + ctx->xphdr.cave_lenght;
 
 	printf("Segment to be encrypted is %ld bytes long, starting at offset %ld, \
@@ -42,17 +42,17 @@ static void set_encryption_data(s_bin_ctx *ctx,
 	if (phdr.p_offset == 0)
 	{
 		Elf64_Off headers_off = info->phdr_offset + (info->phdr_size * info->phdr_count);
-		ctx->xphdr.txt_vaddress = phdr.p_vaddr + headers_off;
-		ctx->xphdr.txt_size_val = phdr.p_filesz - headers_off;
-		ctx->xphdr.txt_offset = headers_off;
+		ctx->xphdr.v_addr = phdr.p_vaddr + headers_off;
+		ctx->xphdr.fsize_val = phdr.p_filesz - headers_off;
+		ctx->xphdr.hdr_offset = headers_off;
 	}
 	else
 	{
-		ctx->xphdr.txt_vaddress = phdr.p_vaddr;
-		ctx->xphdr.txt_offset = phdr.p_offset;
-		ctx->xphdr.txt_size_val = phdr.p_filesz;
+		ctx->xphdr.v_addr = phdr.p_vaddr;
+		ctx->xphdr.hdr_offset = phdr.p_offset;
+		ctx->xphdr.fsize_val = phdr.p_filesz;
 	}
-	printf("Base offset was %ld. Encryption will start at %ld\n", phdr.p_offset, ctx->xphdr.txt_offset);
+	printf("Base offset was %ld. Encryption will start at %ld\n", phdr.p_offset, ctx->xphdr.hdr_offset);
 }
 
 /* Finds and stores the executable PT_LOAD segment of the binary, which contains the .text section
@@ -65,6 +65,14 @@ bool find_xphdr(Elf64_Phdr *filemap, const s_pdhr_info *phdr_info, s_bin_ctx *ct
 
 	for (int i = 0; i < phdr_info->phdr_count; i++)
 	{
+		if (filemap[i].p_filesz > filemap[i].p_memsz)
+			return _perror("Malformed binary doesn't have enough memory to allocate its length");
+		if (filemap[i].p_type == PT_DYNAMIC)
+		{
+			ctx->dynhdr.v_addr = filemap[i].p_vaddr;
+			ctx->dynhdr.hdr_offset = filemap[i].p_offset;
+			ctx->xphdr.fsize_val = filemap[i].p_filesz;
+		}
 		if (filemap[i].p_flags & PF_X && filemap[i].p_type == PT_LOAD)
 		{
 			if (ephdr_count == 0)
@@ -77,10 +85,10 @@ bool find_xphdr(Elf64_Phdr *filemap, const s_pdhr_info *phdr_info, s_bin_ctx *ct
 		return _perror("Invalid value of executable PT_LOAD");
 
 	set_encryption_data(ctx, filemap[xphdr_i], phdr_info);
-	ctx->xphdr.txt_size_addr = &(filemap[xphdr_i]).p_filesz;
+	ctx->xphdr.fsizse_addr = &(filemap[xphdr_i]).p_filesz;
 	ctx->xphdr.mem_size_addr = &(filemap[xphdr_i]).p_memsz;
-	ctx->xphdr.cave_offset = ctx->xphdr.txt_offset + *(ctx->xphdr.txt_size_addr);
-	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.txt_size_addr));
+	ctx->xphdr.cave_offset = ctx->xphdr.hdr_offset + *(ctx->xphdr.fsizse_addr);
+	ctx->xphdr.cave_lenght = compute_cave_lenght(*(ctx->xphdr.fsizse_addr));
 
 	if (!is_safe_offset(ctx))
 		return _perror(strerror(ERANGE));
@@ -110,14 +118,14 @@ bool insert_stub(void *file_map, s_bin_ctx *ctx)
 
 	*o_entry = ctx->original_entrypoint;
 
-	*(ctx->program_entrypoint) = ctx->xphdr.txt_vaddress + *(ctx->xphdr.txt_size_addr);
+	*(ctx->program_entrypoint) = ctx->xphdr.v_addr + *(ctx->xphdr.fsizse_addr);
 	*stub_vaddr = *(ctx->program_entrypoint);
 	printf("New entrypoint: %#lx\n", *(ctx->program_entrypoint));
 	ft_memcpy(key, ctx->key, 16);
-	*text = ctx->xphdr.txt_vaddress;
-	*text_size = ctx->xphdr.txt_size_val;
+	*text = ctx->xphdr.v_addr;
+	*text_size = ctx->xphdr.fsize_val;
 
-	*(ctx->xphdr.txt_size_addr) += stub_len;
+	*(ctx->xphdr.fsizse_addr) += stub_len;
 	*(ctx->xphdr.mem_size_addr) += stub_len;
 
 	return true;

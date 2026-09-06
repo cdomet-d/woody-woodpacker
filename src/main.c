@@ -25,35 +25,34 @@ int main(int argc, char *argv[])
 		return _perror(strerror(errno)), 1;
 	off_t len = lseek(bin_fd, 0, SEEK_END);
 	if (len == -1)
-		return _perror(strerror(errno)), 1;
+		return close(bin_fd), _perror(strerror(errno)), 1;
 	off_t sret = lseek(bin_fd, 0, SEEK_SET);
 	if (sret == -1)
-		return _perror(strerror(errno)), 1;
+		return close(bin_fd), _perror(strerror(errno)), 1;
 
 	void *file_map = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_PRIVATE, bin_fd, 0);
 	if (file_map == MAP_FAILED)
-		return _perror(strerror(errno)), 1;
+		return close(bin_fd), _perror(strerror(errno)), 1;
 
 	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)file_map;
 	s_pdhr_info phdrs = {0};
 	s_bin_ctx ctx = {0};
 
 	if (!validate_format(ehdr, &ctx, &phdrs))
-		return 1;
-	if (!find_xphdr((Elf64_Phdr *)(file_map + phdrs.phdr_offset), &phdrs, &ctx))
-		return 1;
+		return close(bin_fd), 1;
+	if (!find_xphdr((file_map + phdrs.phdr_offset), &phdrs, &ctx))
+		return close(bin_fd), 1;
+	validate_preinit_arr(&ctx, (file_map + ctx.dynhdr.hdr_offset));
+	// if (!validate_preinit_arr(&ctx, (file_map + ctx.dynhdr.hdr_offset)))
 	if (!create_cipher_key(ctx.key))
-	{
-		close(bin_fd);
-		return 1;
-	}
-	print_struct(&(ctx.xphdr));
-	ctx.xphdr.txt_data = (unsigned char *)file_map + ctx.xphdr.txt_offset;
-	encrypt_text(ctx.key, ctx.xphdr.txt_data, ctx.xphdr.txt_size_val);
+		return close(bin_fd), 1;
+
+	ctx.xphdr.encrypted_data = (unsigned char *)file_map + ctx.xphdr.hdr_offset;
+	encrypt_text(ctx.key, ctx.xphdr.encrypted_data, ctx.xphdr.fsize_val);
 	if (!insert_stub(file_map, &ctx))
-		return 1;
-	print_struct(&(ctx.xphdr));
-	create_woody_file(file_map, len);
+		return close(bin_fd), 1;
+	if (!create_woody_file(file_map, len))
+		return close(bin_fd), 1;
 	close(bin_fd);
 	return 0;
 }

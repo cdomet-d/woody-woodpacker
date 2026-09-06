@@ -28,14 +28,14 @@ typedef struct phdr_info
 
 typedef struct xphdr
 {
-	Elf64_Addr txt_vaddress;
+	Elf64_Addr v_addr;
 	Elf64_Off cave_offset;
-	Elf64_Off txt_offset;
+	Elf64_Off hdr_offset;
+	Elf64_Xword *fsizse_addr;
 	Elf64_Xword *mem_size_addr;
-	Elf64_Xword *txt_size_addr;
 	Elf64_Xword cave_lenght;
-	Elf64_Xword txt_size_val;
-	unsigned char *txt_data;
+	Elf64_Xword fsize_val;
+	unsigned char *encrypted_data;
 } s_xphdr;
 
 /* a simple struct to store our binary informations across the project
@@ -45,17 +45,11 @@ Using the typedefs protects us from byte lenght mismatches on different architec
 */
 typedef struct bin_ctx
 {
-	/* Pointer to e_entry. We update it with the vadr of the stub appended to the executable PT_LOAD
-	We will use it at the end of the stub to launch the regular execution.
-	Holds `e_entry`*/
 	Elf64_Addr *program_entrypoint;
-	/* A backup of the original entrypoint; we store it in order to jump back to the original program execution once the stub has run*/
 	Elf64_Addr original_entrypoint;
-	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
-
+	s_xphdr dynhdr;
 	unsigned char key[16];
-
 } s_bin_ctx;
 
 // logging
@@ -72,10 +66,8 @@ void hexdump(const s_xphdr *xphdr);
 
 // validation
 bool is_safe_offset(const s_bin_ctx *ctx);
-bool is_valid_magic(const unsigned char *ident);
-bool is_valid_format(const int ei_class);
-bool is_valid_machine(const int e_machine);
 bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
+bool validate_preinit_arr(const s_bin_ctx *ctx, Elf64_Dyn *dyn);
 
 // header recovery
 bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
