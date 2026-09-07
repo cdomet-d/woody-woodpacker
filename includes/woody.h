@@ -38,6 +38,13 @@ typedef struct xphdr
 	unsigned char *encrypted_data;
 } s_xphdr;
 
+typedef struct pt_load_range
+{
+	bool is_executable;
+	Elf64_Addr vaddr_start;
+	Elf64_Addr vaddr_end;
+} s_pt_load_range;
+
 /* a simple struct to store our binary informations across the project
 The Variable types (Elf64_...) are typedefs on fixed width types.
 It's safer to use those, because the ELF format specifies byte width for every fields.
@@ -47,8 +54,11 @@ typedef struct bin_ctx
 {
 	Elf64_Addr *program_entrypoint;
 	Elf64_Addr original_entrypoint;
+
 	s_xphdr xphdr;
 	s_xphdr dynhdr;
+	size_t pt_load_count;
+	s_pt_load_range *pt_loads;
 	unsigned char key[16];
 } s_bin_ctx;
 
@@ -61,16 +71,24 @@ void _plog(const char *mess);
 void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
-void print_struct(const s_xphdr *hdr);
-void hexdump(const s_xphdr *xphdr);
+void print_xphdr_struct(const s_xphdr *hdr);
+void print_pt_load_ranges(const s_bin_ctx *ctx);
+const char *dtag_value(Elf64_Sxword tag);
+void print_pt_load_range(const s_pt_load_range *range);
 
 // validation
 bool is_safe_offset(const s_bin_ctx *ctx);
-bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
-bool validate_preinit_arr(const s_bin_ctx *ctx, Elf64_Dyn *dyn);
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *info);
 
 // header recovery
-bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
+bool get_dynamic_and_executable_headers(Elf64_Phdr *phdr, const s_pdhr_info *info, s_bin_ctx *ctx);
+
+// header parsing
+size_t compute_cave_lenght(Elf64_Xword txt_size);
+bool is_safe_cave(size_t self, Elf64_Phdr *filemap, const s_pdhr_info *info, s_bin_ctx *ctx);
+void set_encryption_data(s_bin_ctx *ctx, Elf64_Phdr phdr, const s_pdhr_info *info);
+size_t get_pt_load_count(Elf64_Phdr *filemap, s_pdhr_info *info);
+bool validate_dt_init(const s_bin_ctx *ctx, Elf64_Dyn *dyn);
 
 // header modification
 bool insert_stub(void *file_map, s_bin_ctx *ctx);

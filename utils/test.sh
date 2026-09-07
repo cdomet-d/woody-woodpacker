@@ -34,7 +34,7 @@ while IFS= read -r line; do
 		failures+=1
 		creat_fail+=1
 	fi
-done <./utils/test-home.txt
+done <./utils/test-school.txt
 
 rm utils/woody-out utils/command-out
 

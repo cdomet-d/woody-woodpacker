@@ -15,7 +15,9 @@ SRC +=	main.c \
 		logging.c \
 		printers.c \
 		binary_validation.c \
-		header_manipulation.c \
+		stub_insertion.c \
+		ehdr_parsing.c \
+		ehdr_parsing_utils.c \
 		cipher.c
 
 OBJS:= $(addprefix $(BUILD_DIR),$(SRC:%.c=%.o))
