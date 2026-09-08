@@ -42,38 +42,28 @@ static bool is_valid_magic(const unsigned char *ident)
 
 static bool is_valid_format(const int ei_class)
 {
-	return ei_class == ELFCLASS64 ? true : false;
+	return ei_class == ELFCLASS64;
 }
 
 static bool is_valid_machine(const int e_machine)
 {
-	return e_machine == EM_X86_64 ? true : false;
+	return e_machine == EM_X86_64;
 }
 
-bool validate_format(Elf64_Ehdr *ehdr, s_bin_exec_seg *exec_seg, s_pdhr_info *phdr_info)
+static bool is_valid_file(const Elf64_Half e_type)
+{
+	return e_type == ET_EXEC;
+}
+
+bool validate_format(Elf64_Ehdr *ehdr)
 {
 	if (!is_valid_magic(ehdr->e_ident))
-		return _perror("File format not supported");
+		return _perror("Not an ELF file");
+	if (!is_valid_file(ehdr->e_type))
+		return _perror("File format not supported (DT_EXEC only)");
 	if (!is_valid_format(ehdr->e_ident[EI_CLASS]))
 		return _perror("File architecture not supported");
 	if (!is_valid_machine(ehdr->e_machine))
 		return _perror("Machine architecture not supported");
-	exec_seg->program_entrypoint = &(ehdr->e_entry);
-	exec_seg->original_entrypoint = ehdr->e_entry;
-	phdr_info->phdr_count = ehdr->e_phnum;
-	phdr_info->phdr_offset = ehdr->e_phoff;
-	phdr_info->phdr_size = ehdr->e_phentsize;
-	// print_ehdr(get_file_type(ehdr->e_type), get_file_class(ehdr->e_ident), ehdr->e_entry, phdr_info);
-	return true;
-}
-
-bool is_safe_offset(const s_bin_exec_seg *exec_seg)
-{
-	if (exec_seg->xphdr.hdr_offset > UINT64_MAX - *(exec_seg->xphdr.fsizse_addr))
-		return false;
-	if (exec_seg->xphdr.v_addr > UINT64_MAX - *(exec_seg->xphdr.fsizse_addr))
-		return false;
-	if (exec_seg->xphdr.cave_offset > UINT64_MAX - exec_seg->xphdr.cave_lenght)
-		return false;
 	return true;
 }
