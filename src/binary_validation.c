@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "libft.h"
 
-// static 
+// static
 const char *get_file_type(Elf64_Half type)
 {
 	switch (type)
@@ -20,7 +20,7 @@ const char *get_file_type(Elf64_Half type)
 	}
 }
 
-// static 
+// static
 const char *get_file_class(const unsigned char ident[EI_NIDENT])
 {
 	switch (ident[EI_CLASS])
@@ -50,7 +50,7 @@ static bool is_valid_machine(const int e_machine)
 	return e_machine == EM_X86_64 ? true : false;
 }
 
-bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_exec_seg *exec_seg, s_pdhr_info *phdr_info)
 {
 	if (!is_valid_magic(ehdr->e_ident))
 		return _perror("File format not supported");
@@ -58,8 +58,8 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 		return _perror("File architecture not supported");
 	if (!is_valid_machine(ehdr->e_machine))
 		return _perror("Machine architecture not supported");
-	ctx->program_entrypoint = &(ehdr->e_entry);
-	ctx->original_entrypoint = ehdr->e_entry;
+	exec_seg->program_entrypoint = &(ehdr->e_entry);
+	exec_seg->original_entrypoint = ehdr->e_entry;
 	phdr_info->phdr_count = ehdr->e_phnum;
 	phdr_info->phdr_offset = ehdr->e_phoff;
 	phdr_info->phdr_size = ehdr->e_phentsize;
@@ -67,13 +67,13 @@ bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info)
 	return true;
 }
 
-bool is_safe_offset(const s_bin_ctx *ctx)
+bool is_safe_offset(const s_bin_exec_seg *exec_seg)
 {
-	if (ctx->xphdr.hdr_offset > UINT64_MAX - *(ctx->xphdr.fsizse_addr))
+	if (exec_seg->xphdr.hdr_offset > UINT64_MAX - *(exec_seg->xphdr.fsizse_addr))
 		return false;
-	if (ctx->xphdr.v_addr > UINT64_MAX - *(ctx->xphdr.fsizse_addr))
+	if (exec_seg->xphdr.v_addr > UINT64_MAX - *(exec_seg->xphdr.fsizse_addr))
 		return false;
-	if (ctx->xphdr.cave_offset > UINT64_MAX - ctx->xphdr.cave_lenght)
+	if (exec_seg->xphdr.cave_offset > UINT64_MAX - exec_seg->xphdr.cave_lenght)
 		return false;
 	return true;
 }

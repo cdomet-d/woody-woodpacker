@@ -41,8 +41,9 @@ typedef struct xphdr
 typedef struct pt_load_range
 {
 	bool is_executable;
-	Elf64_Addr vaddr_start;
 	Elf64_Addr vaddr_end;
+	Elf64_Addr vaddr_start;
+	Elf64_Off offset;
 } s_pt_load_range;
 
 /* a simple struct to store our binary informations across the project
@@ -50,17 +51,28 @@ The Variable types (Elf64_...) are typedefs on fixed width types.
 It's safer to use those, because the ELF format specifies byte width for every fields.
 Using the typedefs protects us from byte lenght mismatches on different architectures.
 */
-typedef struct bin_ctx
+typedef struct bin_exec_seg
 {
 	Elf64_Addr *program_entrypoint;
 	Elf64_Addr original_entrypoint;
-
 	s_xphdr xphdr;
+	unsigned char key[16];
+} s_bin_exec_seg;
+
+typedef struct dt_rela
+{
+	Elf64_Xword entry_count;
+	Elf64_Xword sz;
+	Elf64_Addr vaddr;
+	Elf64_Off offset;
+} s_rela_arr;
+
+typedef struct dyn_info
+{
 	s_xphdr dynhdr;
 	size_t pt_load_count;
 	s_pt_load_range *pt_loads;
-	unsigned char key[16];
-} s_bin_ctx;
+} s_dyn_info;
 
 // logging
 bool _perror(const char *error);
@@ -72,26 +84,27 @@ void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoi
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
 void print_xphdr_struct(const s_xphdr *hdr);
-void print_pt_load_ranges(const s_bin_ctx *ctx);
+void print_pt_load_ranges(const s_dyn_info *i_dyn);
 const char *dtag_value(Elf64_Sxword tag);
 void print_pt_load_range(const s_pt_load_range *range);
 
 // validation
-bool is_safe_offset(const s_bin_ctx *ctx);
-bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *info);
+bool is_safe_offset(const s_bin_exec_seg *exec_seg);
+bool validate_format(Elf64_Ehdr *ehdr, s_bin_exec_seg *exec_seg, s_pdhr_info *info);
 
 // header recovery
-bool get_dynamic_and_executable_headers(Elf64_Phdr *phdr, const s_pdhr_info *info, s_bin_ctx *ctx);
-
+bool get_dynamic_and_executable_headers(Elf64_Phdr *filemap, const s_pdhr_info *hdr_info,
+										s_bin_exec_seg *exec_seg, s_dyn_info *dyn_info);
 // header parsing
 size_t compute_cave_lenght(Elf64_Xword txt_size);
-bool is_safe_cave(size_t self, Elf64_Phdr *filemap, const s_pdhr_info *info, s_bin_ctx *ctx);
-void set_encryption_data(s_bin_ctx *ctx, Elf64_Phdr phdr, const s_pdhr_info *info);
+bool is_safe_cave(size_t self, Elf64_Phdr *filemap, const s_pdhr_info *info, s_bin_exec_seg *exec_seg);
+void set_encryption_data(s_bin_exec_seg *exec_seg, Elf64_Phdr phdr, const s_pdhr_info *info);
 size_t get_pt_load_count(Elf64_Phdr *filemap, s_pdhr_info *info);
-bool validate_dt_init(const s_bin_ctx *ctx, Elf64_Dyn *dyn);
+bool init_rela_info(const s_dyn_info *dyn_info, s_rela_arr *rela_arr, Elf64_Dyn *dyn);
+bool validate_init_array(Elf64_Rela *rela_arr, const s_dyn_info *pt_loads, s_rela_arr *init_arr_info);
 
 // header modification
-bool insert_stub(void *file_map, s_bin_ctx *ctx);
+bool insert_stub(void *file_map, s_bin_exec_seg *exec_seg);
 
 // cipher
 void encrypt_text(unsigned char *key, unsigned char *text, Elf64_Xword text_size);

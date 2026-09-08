@@ -345,23 +345,23 @@ Cave Lenght:	%lu\n",
 		   hdr->cave_offset, hdr->cave_lenght);
 }
 
-void print_pt_load_ranges(const s_bin_ctx *ctx)
+void print_pt_load_ranges(const s_dyn_info *i_dyn)
 {
-	size_t count = ctx->pt_load_count;
+	size_t count = i_dyn->pt_load_count;
 	printf("PT_LOAD NB: %ld\n", count);
 	for (size_t i = 0; i < count; i++)
 	{
 		printf("start: 0x%016ld | end: 0x%016ld | executable: %-5s\n",
-			   ctx->pt_loads[i].vaddr_start,
-			   ctx->pt_loads[i].vaddr_end,
-			   ctx->pt_loads[i].is_executable ? "true" : "false");
+			   i_dyn->pt_loads[i].vaddr_start,
+			   i_dyn->pt_loads[i].vaddr_end,
+			   i_dyn->pt_loads[i].is_executable ? "true" : "false");
 	}
 }
 
 void print_pt_load_range(const s_pt_load_range *range)
 {
-		printf("0x%016ld->0x%016ld | executable: %-5s\n",
-			   range->vaddr_start,
-			   range->vaddr_end,
-			   range->is_executable ? "true" : "false");
+	printf("0x%016lx->0x%016lx | executable: %-5s\n",
+		   range->vaddr_start,
+		   range->vaddr_end,
+		   range->is_executable ? "true" : "false");
 }
