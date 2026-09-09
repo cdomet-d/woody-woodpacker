@@ -48,7 +48,7 @@ bool init_exec_seg(Elf64_Phdr *filemap, s_hdr_info *hdr_info, s_exec_seg *exec_s
 	for (size_t i = 0; i < hdr_info->phdr_count; i++)
 	{
 		if (filemap[i].p_filesz > filemap[i].p_memsz)
-			return _perror("Malformed binary doesn't have enough memory to allocate its length");
+			return _perror("Malformed binary doesn't allocate enough memory for its size");
 		if (filemap[i].p_type == PT_LOAD && filemap[i].p_flags & PF_X && xphdr_count == 0)
 		{
 			xphdr_i = i;
@@ -61,7 +61,7 @@ bool init_exec_seg(Elf64_Phdr *filemap, s_hdr_info *hdr_info, s_exec_seg *exec_s
 	if (!is_safe_offset(exec_seg))
 		return _perror(strerror(ERANGE));
 	if (!is_safe_cave(xphdr_i, filemap, hdr_info, exec_seg))
-		return _perror("Found another segment in the code cave.");
+		return _perror("Code cave is unsafe because another segment overlaps it");
 	filemap[xphdr_i].p_flags = 7;
 	return true;
 }

@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include "libft.h"
 
-#define GREEN "\033[48;2;124;204;87m"
-#define INFO "\033[48;2;204;204;255m"
-#define RED "\033[48;2;205;41;73m"
+#define RED "\033[38;2;179;1;30m"
+#define GREEN "\033[0;32m"
+#define INFO "\033[38;2;255;20;147m"
 #define RESET "\033[0m"
 #define x86_64_PAGE_SZ 4096
 

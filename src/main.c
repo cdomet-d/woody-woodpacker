@@ -59,5 +59,6 @@ int main(int argc, char *argv[])
 	if (!create_woody_file(file_map, len))
 		return exit_on_error(NULL, bin_fd);
 	close(bin_fd);
+	_psuccess("Created woody :)");
 	return 0;
 }
