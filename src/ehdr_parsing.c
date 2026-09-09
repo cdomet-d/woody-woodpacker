@@ -49,6 +49,8 @@ bool init_exec_seg(Elf64_Phdr *filemap, s_hdr_info *hdr_info, s_exec_seg *exec_s
 	{
 		if (filemap[i].p_filesz > filemap[i].p_memsz)
 			return _perror("Malformed binary doesn't allocate enough memory for its size");
+		if (filemap[i].p_type == PT_INTERP)
+			return _perror("Linker invocation is not supported");
 		if (filemap[i].p_type == PT_LOAD && filemap[i].p_flags & PF_X && xphdr_count == 0)
 		{
 			xphdr_i = i;

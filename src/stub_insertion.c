@@ -1,8 +1,8 @@
-#define STUB_VADDR_OFF 0x1a4
-#define TEXT_OFF 0x16e
-#define OENTRY_OFF 0x19c
-#define KEY_OFF 0x17e
-#define TEXTSZ_OFF 0x176
+#define STUB_VADDR_OFF 0x1fc
+#define TEXT_OFF 0x1b7
+#define OENTRY_OFF 0x1f4
+#define KEY_OFF 0x1c7
+#define TEXTSZ_OFF 0x1bf
 
 #include "woody.h"
 #include "libft.h"

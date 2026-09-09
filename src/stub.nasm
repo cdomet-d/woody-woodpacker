@@ -7,6 +7,25 @@ _stub_start:
     lea rsi, [rel msg]
     mov rdx, msg_len
     syscall
+
+    mov rax, 1 
+    mov rdi, 1 
+	lea rsi, [rel key_a]
+	mov rdx, key_a_len
+	syscall
+	
+	mov rax, 1 
+    mov rdi, 1 
+	lea rsi, [rel key]
+	mov rdx, 16
+	syscall
+
+	mov rax, 1 
+    mov rdi, 1 
+	lea rsi, 10
+	mov rdx, 1
+	syscall
+	
     xor rdx, rdx
 
 _get_offset:
@@ -120,6 +139,8 @@ key: times 16 db 0x00
 key_len: equ 16
 msg: db "....WOODY....", 10
 msg_len: equ $ - msg 
+key_a: db "Encryption key:"
+key_a_len: equ $ - key_a 
 o_entry: dq 0
 stub_vaddr: dq 0
 S: times 256 db 0x00

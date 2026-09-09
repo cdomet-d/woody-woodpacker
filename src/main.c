@@ -53,12 +53,13 @@ int main(int argc, char *argv[])
 	exec_seg.xphdr.encrypted_data = (unsigned char *)file_map + exec_seg.xphdr.hdr_offset;
 	if (!create_cipher_key(exec_seg.key))
 		return exit_on_error(NULL, bin_fd);
+	printf("%s\n", exec_seg.key);
 	encrypt_text(exec_seg.key, exec_seg.xphdr.encrypted_data, exec_seg.xphdr.fsize_val);
 	if (!insert_stub(file_map, &exec_seg))
 		return exit_on_error(NULL, bin_fd);
 	if (!create_woody_file(file_map, len))
 		return exit_on_error(NULL, bin_fd);
 	close(bin_fd);
-	_psuccess("Created woody :)");
+	_psuccess("Created woody ✅");
 	return 0;
 }

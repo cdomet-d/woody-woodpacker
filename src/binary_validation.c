@@ -50,17 +50,10 @@ static bool is_valid_machine(const int e_machine)
 	return e_machine == EM_X86_64;
 }
 
-static bool is_valid_file(const Elf64_Half e_type)
-{
-	return e_type == ET_EXEC;
-}
-
 bool validate_format(Elf64_Ehdr *ehdr)
 {
 	if (!is_valid_magic(ehdr->e_ident))
 		return _perror("Not an ELF file");
-	if (!is_valid_file(ehdr->e_type))
-		return _perror("File format not supported (DT_EXEC only)");
 	if (!is_valid_format(ehdr->e_ident[EI_CLASS]))
 		return _perror("File architecture not supported");
 	if (!is_valid_machine(ehdr->e_machine))
