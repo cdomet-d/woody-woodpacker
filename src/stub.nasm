@@ -5,26 +5,8 @@ _stub_start:
     mov rax, 1 
     mov rdi, 1 
     lea rsi, [rel msg]
-    mov rdx, msg_len
+    mov rdx, msg_len + hex_key_len
     syscall
-
-    mov rax, 1 
-    mov rdi, 1 
-	lea rsi, [rel key_a]
-	mov rdx, key_a_len
-	syscall
-	
-	mov rax, 1 
-    mov rdi, 1 
-	lea rsi, [rel key]
-	mov rdx, 16
-	syscall
-
-	mov rax, 1 
-    mov rdi, 1 
-	lea rsi, 10
-	mov rdx, 1
-	syscall
 	
     xor rdx, rdx
 
@@ -32,13 +14,9 @@ _get_offset:
     lea r14, [rel _stub_start]
     mov rcx, [rel stub_vaddr]
     sub r14, rcx
-    test r14, r14
-    jns _mprotect
-    neg r14
 
 _mprotect:
-    lea rax, [rel text]
-	mov rax, [rax]
+	mov rax, [rel text]
     add rax, r14
     mov rdi, rax 
     and rdi, ~0xFFF
@@ -137,10 +115,10 @@ text: dq 0
 text_size: dq 0
 key: times 16 db 0x00
 key_len: equ 16
-msg: db "....WOODY....", 10
+msg: db "....WOODY....", 10, "Encryption key: "
 msg_len: equ $ - msg 
-key_a: db "Encryption key:"
-key_a_len: equ $ - key_a 
+hex_key: times 33 db 0x00
+hex_key_len: equ $ - hex_key 
 o_entry: dq 0
 stub_vaddr: dq 0
 S: times 256 db 0x00

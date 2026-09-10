@@ -64,6 +64,5 @@ bool init_exec_seg(Elf64_Phdr *filemap, s_hdr_info *hdr_info, s_exec_seg *exec_s
 		return _perror(strerror(ERANGE));
 	if (!is_safe_cave(xphdr_i, filemap, hdr_info, exec_seg))
 		return _perror("Code cave is unsafe because another segment overlaps it");
-	filemap[xphdr_i].p_flags = 7;
 	return true;
 }

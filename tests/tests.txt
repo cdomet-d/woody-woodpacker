@@ -29,19 +29,20 @@ tests/basic/timeout
 tests/basic/users
 tests/basic/who
 
-/bin/containerd-shim-runc-v2
-src/cipher.c
-tests/basic
 tests/basic/32bytes-sample
 tests/basic/argc_dynamic
-tests/basic/argc_staticpie
 tests/basic/before-main_dynamic
-tests/basic/comm
 tests/basic/dyn-64sample
 tests/basic/env_dynamic
-tests/basic/env_static
-tests/basic/env_staticpie
 tests/basic/func-call_dynamic
 tests/basic/heap_dynamic
+tests/basic/argc_staticpie
+tests/basic/env_static
+tests/basic/env_staticpie
 tests/basic/hostid
+tests/basic/comm
+src/cipher.c
+tests/basic
+/bin/containerd-shim-runc-v2
 tests/basic/malformed_binary
+this_file_does_not_exists

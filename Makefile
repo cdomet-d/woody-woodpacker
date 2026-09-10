@@ -28,7 +28,7 @@ RM := rm -rf
 
 all: lib $(NAME)
 
-$(NAME): $(LIB)libft.a $(OBJS) $(STUB)
+$(NAME): $(STUB) $(LIB)libft.a $(OBJS) 
 	$(CC) $(CFLAGS) $(OBJS) $(STUB) -o $(NAME)  $(INCLUDE)
 	
 $(BUILD_DIR)%.o: $(SRC_DIR)%.c
@@ -56,12 +56,13 @@ run: all
 	./$(NAME) utils/NOPIEsample
 
 vrun: all 
-	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) utils/NOPIEsample
+	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) tests/basic/who
 $(STUB): $(SRC_DIR)stub.nasm
 	@mkdir -p $(dir $@)
 	nasm -f elf64 $(SRC_DIR)stub.nasm -o $(BUILD_DIR)stub.o
 	objcopy -O binary $(BUILD_DIR)stub.o $(BUILD_DIR)stub.bin
 	cd $(BUILD_DIR) && objcopy -I binary -O elf64-x86-64 -B i386:x86-64 stub.bin stub_embed.o
+	bash ./utils/get_asm_varoff.sh
 
 FORCE : 
 

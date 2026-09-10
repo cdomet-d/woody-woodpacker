@@ -1,5 +1,5 @@
 .dir_build
-tests/logs/*
+tests/.logs
 libft/libft.a
 libft/.lib_build
 woody*

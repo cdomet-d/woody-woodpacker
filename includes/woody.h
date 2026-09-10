@@ -11,7 +11,10 @@
 #define GREEN "\033[0;32m"
 #define INFO "\033[38;2;255;20;147m"
 #define RESET "\033[0m"
+
 #define x86_64_PAGE_SZ 4096
+#define KEY_LENGHT 16
+#define HEXKEY_LENGHT 33
 
 typedef struct phdr_info
 {
@@ -42,7 +45,8 @@ typedef struct bin_exec_seg
 	Elf64_Addr *program_entrypoint;
 	Elf64_Addr original_entrypoint;
 	s_xphdr xphdr;
-	unsigned char key[16];
+	unsigned char key[KEY_LENGHT];
+	unsigned char hexkey[HEXKEY_LENGHT];
 } s_exec_seg;
 
 // logging
@@ -75,3 +79,4 @@ bool insert_stub(void *file_map, s_exec_seg *exec_seg);
 // cipher
 void encrypt_text(unsigned char *key, unsigned char *text, Elf64_Xword text_size);
 bool create_cipher_key(unsigned char *key);
+void format_key_to_hex(unsigned char *key, unsigned char *hexkey);
