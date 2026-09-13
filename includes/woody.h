@@ -7,61 +7,32 @@
 #include <unistd.h>
 #include "libft.h"
 
-#define GREEN "\033[48;2;124;204;87m"
-#define INFO "\033[48;2;204;204;255m"
-#define RED "\033[48;2;205;41;73m"
+#define RED "\033[38;2;179;1;30m"
+#define GREEN "\033[0;32m"
+#define INFO "\033[38;2;255;20;147m"
 #define RESET "\033[0m"
-#define STUB_SIZE 20 // UPDATE STUB_SIZE HERE AS IT CHANGES
-#define x86_64_PAGE_SZ 4096
 
-/* Info on the program headers, such as the offset to reach them and how many there are
-	Members:
-	`Elf64_Off phdr_offset;`
-	`Elf64_Half phdr_count;`
-*/
+#define x86_64_PAGE_SZ 4096
+#define KEY_LENGHT 16
+#define HEXKEY_LENGHT 33
+
 typedef struct phdr_info
 {
-	/*  The program header offset.
-	Starting from the beginning of the header (offset 0),
-	we need to jump `phdr_offset` bytes to find the program headers.
-	Holds `e_phoff` */
 	Elf64_Off phdr_offset;
-
-	/*The total number of program headers.
-	We need it to loop through them and find the executable PT_LOAD.
-	Holds `e_phnum` */
 	Elf64_Half phdr_count;
-
-} s_pdhr_info;
+	Elf64_Half phdr_size;
+} s_hdr_info;
 
 typedef struct xphdr
 {
-	size_t index;
-	/*	The text part offset relative to byte 0 of the file on disk
-	It holds the value of `p_offset` */
-	Elf64_Off txt_offset;
-
-	/* The virtual adress of the text section. When the program is loaded,
-	the kernel will place the text starting at that adress. It can be fixed (with non-PIE executable)
-	or must be calculated with an offset if the binary is PIE
-	It holds the value of `p_vaddr` */
-	Elf64_Addr txt_vaddress;
-
-	/* The size of the text section of the program header.
-	It holds the value of `p_filesz` */
-	Elf64_Xword *txt_size;
-
-	Elf64_Xword *mem_size;
-
-	/* Raw .text values for encryption */
-	unsigned char *txt_data;
-
-	/* The offset needed to reach the start of the code cave.
-	It's equal to txt_offset + txt_size*/
+	Elf64_Addr v_addr;
 	Elf64_Off cave_offset;
-
-	/* The size of the code cave */
-	size_t cave_lenght;
+	Elf64_Off hdr_offset;
+	Elf64_Xword *fsizse_addr;
+	Elf64_Xword *mem_size_addr;
+	Elf64_Xword cave_lenght;
+	Elf64_Xword fsize_val;
+	unsigned char *encrypted_data;
 } s_xphdr;
 
 /* a simple struct to store our binary informations across the project
@@ -69,20 +40,14 @@ The Variable types (Elf64_...) are typedefs on fixed width types.
 It's safer to use those, because the ELF format specifies byte width for every fields.
 Using the typedefs protects us from byte lenght mismatches on different architectures.
 */
-typedef struct bin_ctx
+typedef struct bin_exec_seg
 {
-	/* A pointer our self-allocated filemap, stored to dump into woody */
-	unsigned char *updated_file_map;
-	/* Pointer to e_entry. We update it with the vadr of the stub appended to the executable PT_LOAD
-	We will use it at the end of the stub to launch the regular execution.
-	Holds `e_entry`*/
 	Elf64_Addr *program_entrypoint;
-	/* A backup of the original entrypoint; we store it in order to jump back to the original program execution once the stub has run*/
 	Elf64_Addr original_entrypoint;
-	/* Holds information on the executable PT_LOAD and the code cave*/
 	s_xphdr xphdr;
-
-} s_bin_ctx;
+	unsigned char key[KEY_LENGHT];
+	unsigned char hexkey[HEXKEY_LENGHT];
+} s_exec_seg;
 
 // logging
 bool _perror(const char *error);
@@ -90,23 +55,28 @@ bool _psuccess(const char *mess);
 
 // printers
 void _plog(const char *mess);
-void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_pdhr_info *iphdr);
+void print_ehdr(const char *ftype, const char *fclass, const Elf64_Addr entrypoint, const s_hdr_info *iphdr);
 void print_phdr(const Elf64_Phdr *phdr, const int i);
 void print_xphdr(const s_xphdr *xphdr);
-void hexdump(const s_xphdr *xphdr);
+void print_xphdr_struct(const s_xphdr *hdr);
 
-// parsing
-bool is_valid_magic(const unsigned char *ident);
-bool is_valid_format(const int ei_class);
-bool is_valid_machine(const int e_machine);
-bool validate_format(Elf64_Ehdr *ehdr, s_bin_ctx *ctx, s_pdhr_info *phdr_info);
+// validation
+bool is_safe_offset(const s_exec_seg *exec_seg);
+bool validate_format(Elf64_Ehdr *ehdr);
 
-// header recovery
-bool find_xphdr(Elf64_Phdr *phdr, const s_pdhr_info *phdr_info, s_bin_ctx *ctx);
+// initialisation
+void init_program_info(Elf64_Ehdr *ehdr, s_exec_seg *exec_seg, s_hdr_info *hdr_info);
+
+bool init_exec_seg(Elf64_Phdr *filemap, s_hdr_info *hdr_info, s_exec_seg *exec_seg);
+
+// header parsing
+size_t compute_cave_lenght(Elf64_Xword txt_size);
+bool is_safe_cave(size_t self, Elf64_Phdr *filemap, const s_hdr_info *info, s_exec_seg *exec_seg);
 
 // header modification
-bool insert_stub(void *file_map, s_bin_ctx *ctx);
+bool insert_stub(void *file_map, s_exec_seg *exec_seg);
 
 // cipher
-unsigned char *encrypt_text(unsigned char *key, unsigned char *text, int text_size);
+void encrypt_text(unsigned char *key, unsigned char *text, Elf64_Xword text_size);
 bool create_cipher_key(unsigned char *key);
+void format_key_to_hex(unsigned char *key, unsigned char *hexkey);

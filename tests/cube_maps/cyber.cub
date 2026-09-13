@@ -1,0 +1,21 @@
+NO tests/cubes_maps/cube_textures/cyberwickN.xpm
+EA tests/cubes_maps/cube_textures/cyberwickE.xpm
+WE tests/cubes_maps/cube_textures/cyberwickW.xpm
+SO tests/cubes_maps/cube_textures/cyberwickS.xpm
+
+C 255,218,185
+F 255,128,128
+
+    111111111 00         
+   11 00000010000
+ 111 00 0 00100 0
+1    0 0110110
+ 11110 00001010 0
+   1 1100011001000
+   1100 0N000001 0
+    100 00000110  0
+    100000001000  0
+     10001110000 0
+     1100100  0 00
+      11 10000 0
+       11100
