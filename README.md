@@ -43,7 +43,7 @@ Refusing any binary with a `PT_INTERP` segment eliminates both failure modes at 
 
 A test suite (`tests/`) runs the packer against a corpus of statically linked binaries, comparing the packed binary's behavior against the original for a set of invocations, and logging any creation or execution failures for inspection (at path `./tests/logs`).
 
-Run the test suite with: 
+Run the test suite with:
 
 ```bash
 	# at the repository root
@@ -77,8 +77,8 @@ The sources below were human compiled.
 
 ### Encrypting
 
-- [RC4 Encryption Deep Dive: Architecture, Attacks, Cryptanalysis, and Secure Alternatives ](https://www.qcecuring.com/blog/what-is-rc4)
-- Why using /dev/urandom isn't a bad choice to get a random key : [Myths about /dev/urandom](https://www.thomas-huehn.com/myths-about-urandom/)
+- [RC4 Encryption Deep Dive: Architecture, Attacks, Cryptanalysis, and Secure Alternatives](https://www.qcecuring.com/blog/what-is-rc4)
+- [ Why using /dev/urandom isn't a bad choice to get a random key : Myths about /dev/urandom](https://www.thomas-huehn.com/myths-about-urandom/)
 - [RC4 Wiki](https://en.wikipedia.org/wiki/RC4)
 
 ### Assembly
@@ -86,6 +86,9 @@ The sources below were human compiled.
 - [Some assembly background and theory](https://github.com/mschwartz/assembly-tutorial)
 - [x86-64 Registers](https://math.hws.edu/eck/cs220/f22/registers.html)
 - [List of syscalls and their registers](https://syscalls.w3challs.com/?arch=x86_64)
+- [Assembly conditions](https://www.tutorialspoint.com/assembly_programming/assembly_conditions.htm)
+- [Inserting the stub in your exectuable segment](./.readme-ressources/asm_variable_patching.md)
+
 
 ## Authors
 
